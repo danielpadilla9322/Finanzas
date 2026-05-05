@@ -70,9 +70,9 @@ html,body{width:100%;min-height:100vh;background:var(--bg);color:var(--sd);font-
 .wp.lu.on{background:rgba(154,122,204,.2);border-color:var(--lu);color:var(--lu2)}
 
 /* CAT FILTER */
-.cfw{padding:4px 14px 8px;overflow-x:auto;scrollbar-width:none}
+.cfw{padding:4px 14px 8px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}
 .cfw::-webkit-scrollbar{display:none}
-.cfr{display:flex;gap:5px;width:max-content}
+.cfr{display:flex;gap:5px;min-width:max-content;flex-wrap:nowrap}
 .cp{padding:4px 11px;border-radius:18px;border:1px solid var(--b1);background:transparent;color:var(--mt);font-size:11px;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .15s;white-space:nowrap}
 .cp.on{background:rgba(196,122,74,.18);border-color:var(--cu);color:var(--cu2);font-weight:500}
 
@@ -591,10 +591,10 @@ async function cargar() {
     fbGet('/mov/'+kMov()), fbGet('/serv/'+kServ()), fbGet('/deud'), fbGet('/nota/'+kNota())
   ]);
   let changed = false;
-  if(Array.isArray(fbMov))           { entries    = fbMov;   localStorage.setItem(kMov(),  JSON.stringify(fbMov));   changed=true; }
-  if(fbServ && typeof fbServ==='object') { servPagos = fbServ;  localStorage.setItem(kServ(), JSON.stringify(fbServ));  changed=true; }
-  if(Array.isArray(fbDeud))          { deudas     = fbDeud;  localStorage.setItem(kDeud(), JSON.stringify(fbDeud));  changed=true; }
-  if(typeof fbNota === 'string')     { notaActual = fbNota;  localStorage.setItem(kNota(), fbNota);                  changed=true; }
+  if(fbMov !== null)  { entries    = Array.isArray(fbMov)  ? fbMov  : Object.values(fbMov||{});  localStorage.setItem(kMov(),  JSON.stringify(entries));   changed=true; }
+  if(fbServ !== null) { servPagos  = (fbServ && typeof fbServ==='object') ? fbServ : {};               localStorage.setItem(kServ(), JSON.stringify(servPagos));  changed=true; }
+  if(fbDeud !== null) { deudas     = Array.isArray(fbDeud) ? fbDeud : Object.values(fbDeud||{});       localStorage.setItem(kDeud(), JSON.stringify(deudas));    changed=true; }
+  if(typeof fbNota === 'string') { notaActual = fbNota; localStorage.setItem(kNota(), fbNota);         changed=true; }
   doc('sd-txt').textContent = 'actualizado · ' + entries.length + ' registros';
   if(changed) renderTodo();
 }
@@ -1091,11 +1091,16 @@ function calcPend(d) {
   return Math.max(0, d.total - d.abonos.reduce((s,a)=>s+a.monto,0));
 }
 function renderDeudas() {
+  // Firebase a veces devuelve objeto en lugar de array — normalizar
+  if(deudas && !Array.isArray(deudas)) deudas = Object.values(deudas);
+  if(!Array.isArray(deudas)) deudas = [];
   const wrap=doc('deuda-list'); wrap.innerHTML='';
   const act=deudas.filter(d=>calcPend(d)>0);
   const pag=deudas.filter(d=>calcPend(d)<=0);
   const t=doc('deuda-sect-t'); if(t) t.textContent='Deudas activas'+(act.length?' · '+act.length:'');
-  if(!deudas.length) { wrap.innerHTML='<div style="padding:16px;font-size:12px;color:var(--mt)">Sin deudas registradas.</div>'; }
+  if(!deudas.length) {
+    const msg=document.createElement('div'); msg.style.cssText='padding:16px;font-size:12px;color:var(--mt)'; msg.textContent='Sin deudas registradas.'; wrap.appendChild(msg);
+  }
   [...act,...pag].forEach(d=>{
     const esUSD=d.cur==='USD'; const sim=esUSD?'$':'S/';
     const pend=calcPend(d); const pagada=pend<=0;
