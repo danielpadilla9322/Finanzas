@@ -1096,6 +1096,8 @@ function renderDeudas() {
   // Firebase a veces devuelve objeto en lugar de array — normalizar
   if(deudas && !Array.isArray(deudas)) deudas = Object.values(deudas);
   if(!Array.isArray(deudas)) deudas = [];
+  // Asegurar que cada deuda tenga abonos como array
+  deudas.forEach(d => { if(!Array.isArray(d.abonos)) d.abonos = []; });
   const wrap=doc('deuda-list'); wrap.innerHTML='';
   const act=deudas.filter(d=>calcPend(d)>0);
   const pag=deudas.filter(d=>calcPend(d)<=0);
@@ -1106,7 +1108,8 @@ function renderDeudas() {
   [...act,...pag].forEach(d=>{
     const esUSD=d.cur==='USD'; const sim=esUSD?'$':'S/';
     const pend=calcPend(d); const pagada=pend<=0;
-    const pct=Math.min(Math.round((d.total-(esUSD?d.abonos.reduce((s,a)=>s+(a.usd||0),0):d.abonos.reduce((s,a)=>s+a.monto,0))<=0?d.total:d.total-pend)/d.total*100),100);
+    const abs2=Array.isArray(d.abonos)?d.abonos:[];
+    const pct=Math.min(Math.round((pend<=0?100:(d.total-pend)/d.total*100)),100);
     const tp=DTIP.find(t=>t.id===d.tipo)||DTIP[3];
     const item=document.createElement('div'); item.className='di';
     item.innerHTML=
@@ -1169,6 +1172,7 @@ doc('bsv-abono').onclick=()=>{
   const d=deudas.find(x=>x.id===abId); if(!d)return;
   const ab={monto,who:abWho,ts:Date.now()};
   if(d.cur==='USD'){const uv=parseFloat(doc('ab-usd').value);if(uv>0)ab.usd=uv;}
+  if(!Array.isArray(d.abonos)) d.abonos = [];
   d.abonos.push(ab);
   entries.push({id:Date.now()+'_ab_'+Math.random().toString(36).slice(2,5),type:'egreso',monto,nota:'Abono: '+d.nom+(d.cur==='USD'?' (USD)':''),cat:'deuda_mov',who:abWho,ts:Date.now(),fecha:hoy()});
   guardarDeud(); guardarMov(); cerrarOv('ov-abono'); renderDeudas(); renderTodo();
