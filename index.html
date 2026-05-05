@@ -626,7 +626,7 @@ async function cargar() {
   }
   if(typeof fbNota === 'string') { notaActual = fbNota; localStorage.setItem(kNota(), fbNota);         changed=true; }
   doc('sd-txt').textContent = 'actualizado · ' + entries.length + ' registros';
-  if(changed) renderTodo();
+  if(changed) { renderTodo(); renderServs(); renderDeudas(); }
 }
 
 function guardarMov() {
