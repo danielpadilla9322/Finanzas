@@ -121,6 +121,16 @@ html,body{width:100%;min-height:100vh;background:var(--bg);color:var(--sd);font-
 
 /* DEUDAS */
 .adddb{display:flex;align-items:center;justify-content:center;gap:7px;margin:10px 14px;padding:11px;border-radius:11px;border:1px dashed var(--b2);background:transparent;color:var(--mt);font-family:'Outfit',sans-serif;font-size:12px;cursor:pointer;width:calc(100% - 28px);transition:all .15s}
+.sv-pago{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--b1)}
+.sv-pago:last-child{border-bottom:none}
+.sv-pago-info{flex:1;font-size:12px;color:var(--sd2)}
+.sv-pago-sub{font-size:10px;color:var(--mt);margin-top:1px}
+.sv-pago-monto{font-family:'Cormorant Garamond',serif;font-size:14px;font-weight:600;color:var(--eg2)}
+.sv-add{display:inline-flex;align-items:center;gap:5px;margin-top:8px;padding:5px 12px;border-radius:8px;border:1px dashed var(--b2);background:transparent;color:var(--cu2);font-family:'Outfit',sans-serif;font-size:11px;cursor:pointer;transition:all .15s}
+.sv-add:active{border-color:var(--cu);background:rgba(196,122,74,.1)}
+.sv-ind{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.sv-ind.act{background:#5cb85c}
+.sv-ind.vac{background:var(--b2)}
 .adddb:active{border-color:var(--cu);color:var(--cu2)}
 .di{display:flex;align-items:flex-start;gap:10px;padding:12px 14px;border-bottom:1px solid var(--b1)}
 .dico{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;background:var(--card)}
@@ -1029,39 +1039,67 @@ doc('conf-yes').onclick = () => {
 // ═══════════════════════════════════════════
 function renderServs() {
   const wrap = doc('serv-list'); wrap.innerHTML = '';
-  const pend = SERVS.filter(s=>!servPagos[s.id]);
-  const pag  = SERVS.filter(s=> servPagos[s.id]);
-  if(pend.length) {
-    const t=document.createElement('div'); t.className='ssect'; t.textContent='Pendientes · '+pend.length; wrap.appendChild(t);
-    pend.forEach(s => wrap.appendChild(mkServItem(s)));
-  }
-  if(pag.length) {
-    const t=document.createElement('div'); t.className='ssect'; t.textContent='Pagados · '+pag.length; wrap.appendChild(t);
-    pag.forEach(s => wrap.appendChild(mkServItem(s)));
-  }
-  const n = pend.length; const nb=doc('nb-fij'); nb.textContent=n; nb.classList.toggle('on',n>0);
+  // servPagos[sid] ahora es un array de pagos [{monto,who,nota,ts,fecha}, ...]
+  // normalizar por si viene de Firebase como objeto
+  SERVS.forEach(s => {
+    const raw = servPagos[s.id];
+    if(raw && !Array.isArray(raw)) servPagos[s.id] = Object.values(raw);
+    if(!servPagos[s.id]) servPagos[s.id] = [];
+  });
+  const sinPagos = SERVS.filter(s => servPagos[s.id].length === 0).length;
+  const nb=doc('nb-fij'); nb.textContent=sinPagos; nb.classList.toggle('on', sinPagos>0);
+  SERVS.forEach(s => wrap.appendChild(mkServItem(s)));
 }
+
 function mkServItem(s) {
-  const p = servPagos[s.id];
-  const row = document.createElement('div'); row.className='sti';
-  const wc = p&&p.who==='JD'?'jd':'lu';
+  const pagos = Array.isArray(servPagos[s.id]) ? servPagos[s.id] : [];
+  const total = pagos.reduce((sum,p)=>sum+p.monto, 0);
+  const tieneP = pagos.length > 0;
+
+  const row = document.createElement('div'); row.className='sti'; row.style.alignItems='flex-start';
+  const indClass = tieneP ? 'act' : 'vac';
+  const resumen = tieneP ? pagos.length+' pago'+(pagos.length>1?'s':'')+' · S/ '+total.toFixed(2) : 'sin pagos este mes';
+
+  // Lista de pagos
+  let pagosHtml = '';
+  pagos.forEach((p, i) => {
+    const wc = p.who==='JD'?'jd':'lu';
+    const fechaStr = p.fecha ? p.fecha.slice(8)+'/'+p.fecha.slice(5,7) : '';
+    pagosHtml += '<div class="sv-pago">'+
+      '<div style="flex:1"><div class="sv-pago-info"><span class="wtag '+wc+'" style="font-size:9px">'+p.who+'</span> '+(p.nota||'')+'</div>'+
+      '<div class="sv-pago-sub">'+fechaStr+'</div></div>'+
+      '<div class="sv-pago-monto">S/ '+p.monto.toFixed(2)+'</div>'+
+      '<button style="background:none;border:none;color:var(--mt2);font-size:15px;cursor:pointer;opacity:.4;padding:0 3px" data-sid="'+s.id+'" data-idx="'+i+'">×</button>'+
+    '</div>';
+  });
+
   row.innerHTML =
     '<div class="stico">'+s.ico+'</div>'+
-    '<div class="stinfo"><div class="stnm">'+s.nom+'</div>'+
-    '<div class="stmt">'+(p?'<span class="wtag '+wc+'">'+p.who+'</span> S/ '+p.monto.toFixed(2):'—')+'</div></div>'+
-    '<div class="stact">'+
-      '<span class="sst '+(p?'paid':'pend')+'">'+(p?'✓ Pagado':'Pendiente')+'</span>'+
-      (p?'<button class="spbtn undo">Deshacer</button>':'<button class="spbtn pagar">Pagar</button>')+
+    '<div class="stinfo" style="flex:1">'+
+      '<div style="display:flex;align-items:center;gap:7px">'+
+        '<div class="stnm">'+s.nom+'</div>'+
+        '<div class="sv-ind '+indClass+'"></div>'+
+      '</div>'+
+      '<div class="stmt">'+resumen+'</div>'+
+      (pagosHtml ? '<div style="margin-top:8px">'+pagosHtml+'</div>' : '')+
+      '<button class="sv-add" data-sid="'+s.id+'" data-nom="'+s.nom+'">+ Añadir pago</button>'+
     '</div>';
-  row.querySelector('.spbtn').onclick = () => {
-    if(p) { delete servPagos[s.id]; guardarServ(); renderServs(); toast('Pago deshecho'); }
-    else abrirServ(s.id, s.nom);
-  };
+
+  // Borrar pago individual
+  row.querySelectorAll('[data-idx]').forEach(btn => {
+    btn.onclick = () => {
+      const sid = btn.dataset.sid; const idx = parseInt(btn.dataset.idx);
+      servPagos[sid].splice(idx, 1);
+      guardarServ(); renderServs(); toast('Pago eliminado');
+    };
+  });
+  // Añadir pago
+  row.querySelector('.sv-add').onclick = () => abrirServ(s.id, s.nom);
   return row;
 }
 function abrirServ(id, nom) {
   svId=id; svWho='JD';
-  doc('mo-serv-t').textContent = 'Pagar: '+nom;
+  doc('mo-serv-t').textContent = 'Pago: '+nom;
   doc('sv-jd').className='tb sjd'; doc('sv-lu').className='tb';
   doc('sv-monto').value=''; doc('sv-nota').value='';
   doc('ov-serv').classList.add('on'); setTimeout(()=>doc('sv-monto').focus(),250);
@@ -1075,8 +1113,9 @@ doc('bsv-serv').onclick = () => {
   const monto=parseFloat(doc('sv-monto').value);
   if(!monto||monto<=0){ toast('Ingresa un monto'); return; }
   const nota=doc('sv-nota').value.trim();
-  const nom=doc('mo-serv-t').textContent.replace('Pagar: ','');
-  servPagos[svId]={monto,who:svWho,nota,ts:Date.now()};
+  const nom=doc('mo-serv-t').textContent.replace('Pago: ','');
+  if(!Array.isArray(servPagos[svId])) servPagos[svId]=[];
+  servPagos[svId].push({monto,who:svWho,nota,ts:Date.now(),fecha:hoy()});
   entries.push({id:Date.now()+'_sv_'+Math.random().toString(36).slice(2,5),type:'egreso',monto,nota:nota||nom,cat:'serv_fij',who:svWho,ts:Date.now(),fecha:hoy()});
   guardarServ(); guardarMov();
   cerrarOv('ov-serv'); renderServs(); renderTodo();
@@ -1293,8 +1332,11 @@ window.exportar = () => {
   const luEg=entries.filter(e=>e.type==='egreso'&&e.who==='L').reduce((s,e)=>s+e.monto,0);
   const allEg=[...EG,{id:'serv_fij',ico:'🔁',lbl:'Servicios'},{id:'deuda_mov',ico:'📄',lbl:'Deudas'}];
   const catL=allEg.map(c=>({...c,sum:entries.filter(e=>e.type==='egreso'&&e.cat===c.id).reduce((s,e)=>s+e.monto,0)})).filter(c=>c.sum>0).sort((a,b)=>b.sum-a.sum).map(c=>'  '+c.ico+' '+c.lbl+': S/ '+c.sum.toFixed(2)).join('\n');
-  const sp=SERVS.filter(s=>!servPagos[s.id]).map(s=>'  ⬜ '+s.nom).join('\n');
-  const sg=SERVS.filter(s=>servPagos[s.id]).map(s=>'  ✅ '+s.nom+' — S/ '+servPagos[s.id].monto.toFixed(2)+' ('+servPagos[s.id].who+')').join('\n');
+  const sp=SERVS.filter(s=>!servPagos[s.id]||servPagos[s.id].length===0).map(s=>'  ○ '+s.nom).join('\n');
+  const sg=SERVS.filter(s=>servPagos[s.id]&&servPagos[s.id].length>0).map(s=>{
+    const ps=servPagos[s.id]; const tot=ps.reduce((a,p)=>a+p.monto,0);
+    return '  ● '+s.nom+' — S/ '+tot.toFixed(2)+' ('+ps.length+' pago'+(ps.length>1?'s':'')+')';
+  }).join('\n');
   let txt=`🏠 CASA — ${mesL}\n${'─'.repeat(28)}\n📊 BALANCE\n  Ingresos: S/ ${ig.toFixed(2)}\n  Egresos:  S/ ${eg.toFixed(2)}\n  Balance:  ${bal>=0?'+':''}S/ ${bal.toFixed(2)} ${bal>=0?'✅':'⚠️'}\n\n👤 POR PERSONA\n  Juan Daniel: S/ ${jdEg.toFixed(2)}\n  Lucero:      S/ ${luEg.toFixed(2)}\n`;
   if(catL) txt+=`\n📂 CATEGORÍAS\n${catL}\n`;
   if(sg||sp){ txt+=`\n🔁 SERVICIOS\n`; if(sg)txt+=sg+'\n'; if(sp)txt+=sp+'\n'; }
