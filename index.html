@@ -565,20 +565,57 @@ const kDeud = () => `casa2-deu`;
 const kNota = () => `casa2-not-${curY}-${String(curM+1).padStart(2,'0')}`;
 
 // ═══════════════════════════════════════════
-// STORAGE — SOLO LOCALSTORAGE
+// STORAGE — FIREBASE + localStorage respaldo
 // ═══════════════════════════════════════════
-function cargar() {
-  try { entries    = JSON.parse(localStorage.getItem(kMov())  || '[]'); } catch(e) { entries = []; }
-  try { servPagos  = JSON.parse(localStorage.getItem(kServ()) || '{}'); } catch(e) { servPagos = {}; }
-  try { deudas     = JSON.parse(localStorage.getItem(kDeud()) || '[]'); } catch(e) { deudas = []; }
-  try { notaActual = localStorage.getItem(kNota()) || ''; }              catch(e) { notaActual = ''; }
-  doc('sd-txt').textContent = entries.length + ' registros';
+const FB = 'https://finanzas-d39ec-default-rtdb.firebaseio.com';
+
+async function fbGet(path) {
+  try { const r = await fetch(FB+path+'.json'); if(!r.ok) return null; const d=await r.json(); return d; }
+  catch(_) { return null; }
+}
+async function fbSet(path, data) {
+  try { await fetch(FB+path+'.json', {method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)}); }
+  catch(_) {}
 }
 
-function guardarMov()  { localStorage.setItem(kMov(),  JSON.stringify(entries));   doc('sd-txt').textContent = entries.length + ' registros guardados'; }
-function guardarServ() { localStorage.setItem(kServ(), JSON.stringify(servPagos)); }
-function guardarDeud() { localStorage.setItem(kDeud(), JSON.stringify(deudas));    }
-function guardarNota() { localStorage.setItem(kNota(), notaActual);                }
+async function cargar() {
+  doc('sd-txt').textContent = 'sincronizando...';
+  // Carga local primero para respuesta inmediata
+  try { entries    = JSON.parse(localStorage.getItem(kMov())  || '[]'); } catch(_) { entries = []; }
+  try { servPagos  = JSON.parse(localStorage.getItem(kServ()) || '{}'); } catch(_) { servPagos = {}; }
+  try { deudas     = JSON.parse(localStorage.getItem(kDeud()) || '[]'); } catch(_) { deudas = []; }
+  try { notaActual = localStorage.getItem(kNota()) || ''; }              catch(_) { notaActual = ''; }
+  renderTodo();
+  // Luego sincroniza con Firebase
+  const [fbMov, fbServ, fbDeud, fbNota] = await Promise.all([
+    fbGet('/mov/'+kMov()), fbGet('/serv/'+kServ()), fbGet('/deud'), fbGet('/nota/'+kNota())
+  ]);
+  let changed = false;
+  if(Array.isArray(fbMov))           { entries    = fbMov;   localStorage.setItem(kMov(),  JSON.stringify(fbMov));   changed=true; }
+  if(fbServ && typeof fbServ==='object') { servPagos = fbServ;  localStorage.setItem(kServ(), JSON.stringify(fbServ));  changed=true; }
+  if(Array.isArray(fbDeud))          { deudas     = fbDeud;  localStorage.setItem(kDeud(), JSON.stringify(fbDeud));  changed=true; }
+  if(typeof fbNota === 'string')     { notaActual = fbNota;  localStorage.setItem(kNota(), fbNota);                  changed=true; }
+  doc('sd-txt').textContent = 'actualizado · ' + entries.length + ' registros';
+  if(changed) renderTodo();
+}
+
+function guardarMov() {
+  localStorage.setItem(kMov(), JSON.stringify(entries));
+  fbSet('/mov/'+kMov(), entries);
+  doc('sd-txt').textContent = entries.length + ' registros guardados';
+}
+function guardarServ() {
+  localStorage.setItem(kServ(), JSON.stringify(servPagos));
+  fbSet('/serv/'+kServ(), servPagos);
+}
+function guardarDeud() {
+  localStorage.setItem(kDeud(), JSON.stringify(deudas));
+  fbSet('/deud', deudas);
+}
+function guardarNota() {
+  localStorage.setItem(kNota(), notaActual);
+  fbSet('/nota/'+kNota(), notaActual);
+}
 
 // ═══════════════════════════════════════════
 // UTILS
