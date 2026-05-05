@@ -521,7 +521,7 @@ const SERVS = [
   {id:'internet',  ico:'📡', nom:'Internet'},
   {id:'cel-jd',    ico:'📱', nom:'Celular Juan Daniel'},
   {id:'cel-l',     ico:'📱', nom:'Celular Lucero'},
-  {id:'membr',     ico:'🖥️', nom:'Membresías / Streaming'},
+  {id:'membr',     ico:'🖥️', nom:'Membresías'},
 ];
 const DTIP = [
   {id:'prestamo',ico:'💰',lbl:'Préstamo'},
@@ -603,8 +603,27 @@ async function cargar() {
   ]);
   let changed = false;
   if(fbMov !== null)  { entries    = Array.isArray(fbMov)  ? fbMov  : Object.values(fbMov||{});  localStorage.setItem(kMov(),  JSON.stringify(entries));   changed=true; }
-  if(fbServ !== null) { servPagos  = (fbServ && typeof fbServ==='object') ? fbServ : {};               localStorage.setItem(kServ(), JSON.stringify(servPagos));  changed=true; }
-  if(fbDeud !== null) { deudas     = Array.isArray(fbDeud) ? fbDeud : Object.values(fbDeud||{});       localStorage.setItem(kDeud(), JSON.stringify(deudas));    changed=true; }
+  if(fbServ !== null && typeof fbServ === 'object') {
+    // Normalizar: cada servicio puede tener objeto {p0:..., p1:...} → array
+    const normalizado = {};
+    Object.keys(fbServ).forEach(sid => {
+      const raw = fbServ[sid];
+      normalizado[sid] = Array.isArray(raw) ? raw : Object.values(raw || {});
+    });
+    servPagos = normalizado;
+    localStorage.setItem(kServ(), JSON.stringify(servPagos));
+    changed = true;
+  }
+  if(fbDeud !== null) {
+    // Firebase puede devolver objeto {id: deuda} o array — normalizar siempre a array
+    if(Array.isArray(fbDeud)) deudas = fbDeud;
+    else if(typeof fbDeud === 'object') deudas = Object.values(fbDeud);
+    else deudas = [];
+    // Asegurar abonos en cada deuda
+    deudas.forEach(d => { if(!Array.isArray(d.abonos)) d.abonos = []; });
+    localStorage.setItem(kDeud(), JSON.stringify(deudas));
+    changed=true;
+  }
   if(typeof fbNota === 'string') { notaActual = fbNota; localStorage.setItem(kNota(), fbNota);         changed=true; }
   doc('sd-txt').textContent = 'actualizado · ' + entries.length + ' registros';
   if(changed) renderTodo();
@@ -617,11 +636,22 @@ function guardarMov() {
 }
 function guardarServ() {
   localStorage.setItem(kServ(), JSON.stringify(servPagos));
-  fbSet('/serv/'+kServ(), servPagos);
+  // Convertir arrays de pagos a objetos para Firebase
+  const obj = {};
+  Object.keys(servPagos).forEach(sid => {
+    const pagos = Array.isArray(servPagos[sid]) ? servPagos[sid] : [];
+    const pobj = {};
+    pagos.forEach((p, i) => { pobj['p'+i] = p; });
+    obj[sid] = pobj;
+  });
+  fbSet('/serv/'+kServ(), obj);
 }
 function guardarDeud() {
   localStorage.setItem(kDeud(), JSON.stringify(deudas));
-  fbSet('/deud', deudas);
+  // Guardar como objeto {id: deuda} para evitar que Firebase convierta el array
+  const obj = {};
+  deudas.forEach(d => { obj[d.id] = d; });
+  fbSet('/deud', obj);
 }
 function guardarNota() {
   localStorage.setItem(kNota(), notaActual);
