@@ -1503,22 +1503,39 @@ window.exportarDetallado=function(){
 };
 window.exportarQantu=function(){
   var mesL=(MES[curM]+' '+curY).toUpperCase();
-  var kw='qantu';
+  // Solo ingresos con igCat === 'qantu'
   var rel=entries.filter(function(e){
-    return (e.nota||'').toLowerCase().includes(kw)||(e.sub||'').toLowerCase().includes(kw)||(e.cat||'').toLowerCase().includes(kw);
-  }).sort(function(a,b){return b.ts-a.ts;});
-  var egSuz=rel.filter(function(e){return e.type==='egreso';}).reduce(function(s,e){return s+e.monto;},0);
-  var igSuz=rel.filter(function(e){return e.type==='ingreso';}).reduce(function(s,e){return s+e.monto;},0);
-  var txt='REPORTE QANTU — '+mesL+'\n'+'='.repeat(32)+'\n';
-  txt+='Registros: '+rel.length+' | Egresos: S/ '+egSuz.toFixed(2)+' | Ingresos: S/ '+igSuz.toFixed(2)+'\n';
-  txt+='Balance: '+(igSuz-egSuz>=0?'+':'')+'S/ '+(igSuz-egSuz).toFixed(2)+'\n\n';
-  if(!rel.length){txt+='(Sin registros con Qantu este mes)\n';}
-  else{rel.forEach(function(e){
-    var d=new Date(e.fecha?e.fecha+'T12:00:00':e.ts);
-    var cat=e.type==='egreso'?EG.find(function(c){return c.id===e.cat;}):IG.find(function(c){return c.id===e.igCat;});
-    txt+=(e.type==='egreso'?'[-]':'[+]')+' '+d.getDate()+'/'+(d.getMonth()+1)+' S/ '+e.monto.toFixed(2)+' · '+e.who+' · '+(cat?cat.lbl:'—')+(e.sub?' ('+e.sub+')':'')+(e.nota?' — '+e.nota:'')+' \n';
-  });}
-  if(notaActual&&notaActual.toLowerCase().includes(kw))txt+='\nNOTA: '+notaActual+'\n';
+    return e.type==='ingreso' && e.igCat==='qantu';
+  }).sort(function(a,b){
+    // ordenar por fecha
+    var da=new Date(a.fecha?a.fecha+'T12:00:00':a.ts);
+    var db=new Date(b.fecha?b.fecha+'T12:00:00':b.ts);
+    return da-db;
+  });
+  var total=rel.reduce(function(s,e){return s+e.monto;},0);
+  var directos=rel.filter(function(e){return e.sub==='Pago directo';}).reduce(function(s,e){return s+e.monto;},0);
+  var deQantu=rel.filter(function(e){return e.sub==='Pago de Qantu';}).reduce(function(s,e){return s+e.monto;},0);
+
+  var txt='INGRESOS QANTU — '+mesL+'\n'+'='.repeat(32)+'\n';
+  txt+='Total cobrado: S/ '+total.toFixed(2)+'\n';
+  txt+='  Pago directo: S/ '+directos.toFixed(2)+'\n';
+  txt+='  Pago de Qantu: S/ '+deQantu.toFixed(2)+'\n';
+  txt+='Alumnos registrados: '+rel.length+'\n\n';
+
+  if(!rel.length){
+    txt+='(Sin ingresos Qantu este mes)\n';
+  } else {
+    txt+='DETALLE\n';
+    rel.forEach(function(e){
+      var d=new Date(e.fecha?e.fecha+'T12:00:00':e.ts);
+      var fecha=d.getDate()+'/'+(d.getMonth()+1);
+      txt+='  '+fecha+' · S/ '+e.monto.toFixed(2);
+      if(e.sub) txt+=' · '+e.sub;
+      if(e.nota) txt+=' — '+e.nota;
+      txt+=' \n';
+    });
+  }
+  if(notaActual.trim()) txt+='\nNOTAS DEL MES\n  '+notaActual+'\n';
   txt+='\n'+'─'.repeat(32)+'\nGenerado: '+new Date().toLocaleDateString('es-PE');
   if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(txt).then(function(){toast('Reporte Qantu copiado');}).catch(function(){fallbackCopy(txt);});}else fallbackCopy(txt);
 };
