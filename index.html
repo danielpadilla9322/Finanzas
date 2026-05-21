@@ -285,6 +285,8 @@ textarea.fi{resize:none;line-height:1.5}
   <div id="serv-list"></div>
   <div class="ssect" id="deuda-sect-t">Deudas activas</div>
   <div id="deuda-list"></div>
+  <div class="ssect" id="cobro-sect-t">Cobros pendientes</div>
+  <div id="cobro-list"></div>
   <div style="height:80px"></div>
 </div>
 
@@ -429,6 +431,8 @@ textarea.fi{resize:none;line-height:1.5}
   </div>
 </div>
 
+<div class="ov" id="ov-cobro"><div class="mo"><div class="mo-h"></div><div class="mo-t">Nuevo cobro pendiente</div><div class="fl">Descripción</div><input class="fi" type="text" id="co-nom" placeholder="Ej: Yape Carmen..." maxlength="60"><div class="fl">Monto total esperado (S/)</div><input class="fi" type="number" id="co-total" placeholder="0.00" inputmode="decimal" step="0.01" min="0"><div class="fl">¿Quién te debe? (opcional)</div><input class="fi" type="text" id="co-quien" placeholder="Nombre..." maxlength="50"><div class="mact"><button class="bcn" onclick="cerrarOv('ov-cobro')">Cancelar</button><button class="bsv" id="bsv-cobro">Guardar</button></div></div></div>
+<div class="ov" id="ov-cobro-ab"><div class="mo"><div class="mo-h"></div><div class="mo-t" id="mo-cobro-t">Registrar cobro parcial</div><div class="fl">¿Quién cobró?</div><div class="trow"><button class="tb sjd" id="co-ab-jd" onclick="selWhoCobroAb('JD')">Juan Daniel</button><button class="tb" id="co-ab-lu" onclick="selWhoCobroAb('L')">Lucero</button></div><div class="fl">Monto cobrado (S/)</div><input class="fi" type="number" id="co-ab-monto" placeholder="0.00" inputmode="decimal" step="0.01" min="0"><div class="mact"><button class="bcn" onclick="cerrarOv('ov-cobro-ab')">Cancelar</button><button class="bsv" id="bsv-cobro-ab">Registrar</button></div></div></div>
 <!-- MODAL DEUDA -->
 <div class="ov" id="ov-deuda">
   <div class="mo">
@@ -518,6 +522,7 @@ const EG = [
   {id:'transporte', ico:'🚌', lbl:'Transp.',     subs:['Taxi','InDrive / Didi','Colectivo','Otros']},
   {id:'salud',      ico:'💊', lbl:'Salud',       subs:['Consulta','Medicamentos','Otros']},
   {id:'hogar',      ico:'🔧', lbl:'Hogar',       subs:['Muebles','Electrodomésticos','Materiales','Maestro de obras','Otros']},
+  {id:'inversion',  ico:'📈', lbl:'Inversión',   subs:['Educación','Cursos','Membresías','Equipos','Materiales','Otros']},
   {id:'otros',      ico:'📌', lbl:'Otros',       subs:['Materiales','Regalos','Reuniones','Temu / Aliexpress','Libros','Shalom','Jojo','Otros']},
 ];
 const IG = [
@@ -551,6 +556,7 @@ const DIA = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
 let entries = [];
 let servPagos = {};
 let deudas = [];
+let cobros = [];
 let notaActual = '';
 let curM = new Date().getMonth();
 let curY = new Date().getFullYear();
@@ -586,7 +592,8 @@ let pendDel = null;
 // ═══════════════════════════════════════════
 const kMov  = () => `casa2-mov-${curY}-${String(curM+1).padStart(2,'0')}`;
 const kServ = () => `casa2-srv-${curY}-${String(curM+1).padStart(2,'0')}`;
-const kDeud = () => `casa2-deu`;
+const kDeud  = () => `casa2-deu`;
+const kCobro = () => `casa2-cobro`;
 const kNota = () => `casa2-not-${curY}-${String(curM+1).padStart(2,'0')}`;
 
 // ═══════════════════════════════════════════
@@ -608,12 +615,13 @@ async function cargar() {
   // Carga local primero para respuesta inmediata
   try { entries    = JSON.parse(localStorage.getItem(kMov())  || '[]'); } catch(_) { entries = []; }
   try { servPagos  = JSON.parse(localStorage.getItem(kServ()) || '{}'); } catch(_) { servPagos = {}; }
-  try { deudas     = JSON.parse(localStorage.getItem(kDeud()) || '[]'); } catch(_) { deudas = []; }
+  try { deudas  = JSON.parse(localStorage.getItem(kDeud())  || '[]'); } catch(_) { deudas  = []; }
+  try { cobros  = JSON.parse(localStorage.getItem(kCobro()) || '[]'); } catch(_) { cobros  = []; }
   try { notaActual = localStorage.getItem(kNota()) || ''; }              catch(_) { notaActual = ''; }
   renderTodo();
   // Luego sincroniza con Firebase
-  const [fbMov, fbServ, fbDeud, fbNota] = await Promise.all([
-    fbGet('/mov/'+kMov()), fbGet('/serv/'+kServ()), fbGet('/deud'), fbGet('/nota/'+kNota())
+  const [fbMov, fbServ, fbDeud, fbNota, fbCobro] = await Promise.all([
+    fbGet('/mov/'+kMov()), fbGet('/serv/'+kServ()), fbGet('/deud'), fbGet('/nota/'+kNota()), fbGet('/cobro')
   ]);
   let changed = false;
   if(fbMov !== null)  { entries    = Array.isArray(fbMov)  ? fbMov  : Object.values(fbMov||{});  localStorage.setItem(kMov(),  JSON.stringify(entries));   changed=true; }
@@ -638,9 +646,15 @@ async function cargar() {
     localStorage.setItem(kDeud(), JSON.stringify(deudas));
     changed=true;
   }
-  if(typeof fbNota === 'string') { notaActual = fbNota; localStorage.setItem(kNota(), fbNota);         changed=true; }
+  if(typeof fbNota === 'string') { notaActual = fbNota; localStorage.setItem(kNota(), fbNota); changed=true; }
+  if(fbCobro !== null) {
+    cobros = Array.isArray(fbCobro) ? fbCobro : Object.values(fbCobro||{});
+    cobros.forEach(function(co){if(!Array.isArray(co.pagos)) co.pagos=[];});
+    localStorage.setItem(kCobro(), JSON.stringify(cobros));
+    changed=true;
+  }
   doc('sd-txt').textContent = 'actualizado · ' + entries.length + ' registros';
-  if(changed) { renderTodo(); renderServs(); renderDeudas(); }
+  if(changed) { renderTodo(); renderServs(); renderDeudas(); renderCobros(); }
 }
 
 function guardarMov() {
@@ -659,6 +673,10 @@ function guardarServ() {
     obj[sid] = pobj;
   });
   fbSet('/serv/'+kServ(), obj);
+}
+function guardarCobro() {
+  localStorage.setItem(kCobro(), JSON.stringify(cobros));
+  var obj={}; cobros.forEach(function(co){obj[co.id]=co;}); fbSet('/cobro', obj);
 }
 function guardarDeud() {
   localStorage.setItem(kDeud(), JSON.stringify(deudas));
@@ -713,7 +731,7 @@ document.querySelectorAll('.nt').forEach(tab => {
     tab.classList.add('on');
     doc(tab.dataset.sc).classList.add('on');
     const sc = tab.dataset.sc;
-    if(sc === 'sc-fij') { renderServs(); renderDeudas(); }
+    if(sc === 'sc-fij') { renderServs(); renderDeudas(); renderCobros(); }
     if(sc === 'sc-ali') renderAli();
     if(sc === 'sc-res') renderRes();
   });
@@ -1085,6 +1103,9 @@ doc('conf-yes').onclick = () => {
   if(pendDel.type === 'mov') {
     entries = entries.filter(e=>e.id!==pendDel.id);
     guardarMov(); catF='all'; renderTodo(); toast('Registro eliminado');
+  } else if(pendDel.type === 'cobro') {
+    cobros = cobros.filter(function(co){return co.id!==pendDel.id;});
+    guardarCobro(); renderCobros(); toast('Cobro eliminado');
   } else if(pendDel.type === 'deuda') {
     deudas = deudas.filter(d=>d.id!==pendDel.id);
     guardarDeud(); renderDeudas(); toast('Deuda eliminada');
@@ -1188,6 +1209,36 @@ function calcPend(d) {
   const abs = Array.isArray(d.abonos) ? d.abonos : [];
   if(d.cur==='USD') return Math.max(0, d.total - abs.reduce((s,a)=>s+(a.usd||0),0));
   return Math.max(0, d.total - abs.reduce((s,a)=>s+a.monto,0));
+}
+function calcCobro(co) {
+  var abs=Array.isArray(co.pagos)?co.pagos:[];
+  return Math.max(0,co.total-abs.reduce(function(s,p){return s+p.monto;},0));
+}
+var cobroId=null,cobroWho='JD';
+function abrirNuevoCobro(){doc('co-nom').value='';doc('co-total').value='';doc('co-quien').value='';doc('ov-cobro').classList.add('on');setTimeout(function(){doc('co-nom').focus();},250);}
+function abrirCobroModal(cid,nom){cobroId=cid;cobroWho='JD';doc('mo-cobro-t').textContent='Cobro parcial: '+nom;doc('co-ab-jd').className='tb sjd';doc('co-ab-lu').className='tb';doc('co-ab-monto').value='';doc('ov-cobro-ab').classList.add('on');setTimeout(function(){doc('co-ab-monto').focus();},250);}
+function renderCobros(){
+  if(cobros&&!Array.isArray(cobros))cobros=Object.values(cobros);
+  if(!Array.isArray(cobros))cobros=[];
+  cobros.forEach(function(co){if(!Array.isArray(co.pagos))co.pagos=[];});
+  var wrap=doc('cobro-list');if(!wrap)return;wrap.innerHTML='';
+  var pend=cobros.filter(function(co){return calcCobro(co)>0;});
+  var t=doc('cobro-sect-t');if(t)t.textContent='Cobros pendientes'+(pend.length?' · '+pend.length:'');
+  if(!cobros.length){var msg=document.createElement('div');msg.style.cssText='padding:14px 16px;font-size:12px;color:var(--mt)';msg.textContent='Sin cobros pendientes.';wrap.appendChild(msg);}
+  cobros.forEach(function(co){
+    var pend2=calcCobro(co),cobrado=co.total-pend2,pct=Math.min(Math.round(cobrado/co.total*100),100),saldado=pend2<=0;
+    var item=document.createElement('div');item.className='di';
+    item.innerHTML='<div class="dico" style="background:rgba(122,172,204,.15);'+(saldado?'opacity:.4':'')+'">&#128184;</div>'+
+      '<div style="flex:1;min-width:0"><div class="dnm" style="'+(saldado?'text-decoration:line-through;opacity:.5':'')+'">'+co.nom+(co.quien?' <span style="font-size:10px;color:var(--mt)">← '+co.quien+'</span>':'')+'</div>'+
+      '<div class="dmeta">'+(saldado?'<span style="color:var(--ig2)">&#10003; Cobrado</span>':'<span>Pendiente: <strong style="color:var(--ig2)">S/ '+pend2.toFixed(2)+'</strong> de S/ '+co.total.toFixed(2)+'</span>')+'</div>'+
+      (!saldado?'<div class="dpbar"><div class="dpbar-fill" style="width:'+pct+'%;background:var(--ig)"></div></div>':'')+
+      '<div class="dact">'+(!saldado?'<button class="dbtn abono" style="background:rgba(122,172,204,.15);border-color:var(--ig);color:var(--ig2)" data-cid="'+co.id+'">+ Cobro parcial</button>':'')+'<button class="dbtn del" data-cdel="'+co.id+'">Eliminar</button></div></div>'+
+      '<div class="damt" style="color:var(--ig2);'+(saldado?'opacity:.4':'')+'">S/ '+pend2.toFixed(2)+'</div>';
+    item.querySelectorAll('[data-cid]').forEach(function(b){b.onclick=function(){abrirCobroModal(b.dataset.cid,co.nom);};});
+    item.querySelectorAll('[data-cdel]').forEach(function(b){b.onclick=function(){pendDel={type:'cobro',id:b.dataset.cdel};doc('conf-s').textContent='"'+co.nom+'"';doc('conf-ov').classList.add('on');};});
+    wrap.appendChild(item);
+  });
+  var addB=document.createElement('button');addB.className='adddb';addB.textContent='+ Nuevo cobro pendiente';addB.onclick=abrirNuevoCobro;wrap.appendChild(addB);
 }
 function renderDeudas() {
   // Firebase a veces devuelve objeto en lugar de array — normalizar
@@ -1456,11 +1507,37 @@ window.exportarDetallado = function() {
   else fallbackCopy(txt);
 };
 
+window.exportarDetallado=function(){
+  var mesL=(MES[curM]+' '+curY).toUpperCase();
+  var eg=entries.filter(function(e){return e.type==='egreso';}).reduce(function(s,e){return s+e.monto;},0);
+  var ig=entries.filter(function(e){return e.type==='ingreso';}).reduce(function(s,e){return s+e.monto;},0);
+  var bal=ig-eg;
+  var allEg=EG.concat([{id:'serv_fij',ico:'🔁',lbl:'Servicios'},{id:'deuda_mov',ico:'📄',lbl:'Deudas'}]);
+  var txt='CASA — BALANCE DETALLADO '+mesL+'\n'+'='.repeat(32)+'\n\n';
+  txt+='RESUMEN\n  Ingresos:  S/ '+ig.toFixed(2)+'\n  Egresos:   S/ '+eg.toFixed(2)+'\n  Balance:   '+(bal>=0?'+':'')+'S/ '+bal.toFixed(2)+' '+(bal>=0?'OK':'DEFICIT')+'\n\n';
+  var ingresos=entries.filter(function(e){return e.type==='ingreso';}).sort(function(a,b){return b.ts-a.ts;});
+  if(ingresos.length){txt+='INGRESOS ('+ingresos.length+')\n';ingresos.forEach(function(e){var cat=IG.find(function(c){return c.id===e.igCat;});var d=new Date(e.fecha?e.fecha+'T12:00:00':e.ts);txt+='  '+d.getDate()+'/'+(d.getMonth()+1)+' - '+(cat?cat.lbl:'—')+(e.sub?' ('+e.sub+')':'')+' - S/ '+e.monto.toFixed(2)+' - '+e.who+(e.nota?' — '+e.nota:'')+' \n';});txt+='\n';}
+  txt+='EGRESOS\n';
+  allEg.forEach(function(cat){var ces=entries.filter(function(e){return e.type==='egreso'&&e.cat===cat.id;}).sort(function(a,b){return b.ts-a.ts;});if(!ces.length)return;var tot=ces.reduce(function(s,e){return s+e.monto;},0);txt+='\n  '+cat.lbl.toUpperCase()+' — S/ '+tot.toFixed(2)+'\n';ces.forEach(function(e){var d=new Date(e.fecha?e.fecha+'T12:00:00':e.ts);txt+='    '+d.getDate()+'/'+(d.getMonth()+1)+' - S/ '+e.monto.toFixed(2)+' - '+e.who+(e.sub?' ('+e.sub+')':'')+(e.persona?' ['+e.persona+']':'')+(e.nota?' — '+e.nota:'')+' \n';});});
+  var servConP=SERVS.filter(function(s){return servPagos[s.id]&&servPagos[s.id].length>0;});
+  if(servConP.length){txt+='\nSERVICIOS\n';servConP.forEach(function(s){var ps=servPagos[s.id];var tot=ps.reduce(function(a,p){return a+p.monto;},0);txt+='  '+s.nom+' — S/ '+tot.toFixed(2)+' ('+ps.length+' pago'+(ps.length>1?'s':'')+')\n';ps.forEach(function(p){txt+='    S/ '+p.monto.toFixed(2)+' - '+p.who+(p.nota?' — '+p.nota:'')+' \n';});});}
+  var deact=deudas.filter(function(d){return calcPend(d)>0;});
+  if(deact.length){txt+='\nDEUDAS ACTIVAS\n';deact.forEach(function(d){var sim=d.cur==='USD'?'$':'S/';txt+='  '+d.nom+(d.acr?' (-> '+d.acr+')':'')+' — Pendiente: '+sim+' '+calcPend(d).toFixed(2)+' de '+sim+' '+d.total.toFixed(2)+'\n';});}
+  var cobact=cobros.filter(function(co){return calcCobro(co)>0;});
+  if(cobact.length){txt+='\nCOBROS PENDIENTES\n';cobact.forEach(function(co){txt+='  '+co.nom+(co.quien?' (<- '+co.quien+')':'')+' — Pendiente: S/ '+calcCobro(co).toFixed(2)+' de S/ '+co.total.toFixed(2)+'\n';});}
+  if(notaActual.trim())txt+='\nNOTAS\n  '+notaActual.replace(/\n/g,'\n  ')+'\n';
+  txt+='\n'+'─'.repeat(32)+'\nGenerado: '+new Date().toLocaleDateString('es-PE');
+  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(txt).then(function(){toast('Balance copiado');}).catch(function(){fallbackCopy(txt);});}else fallbackCopy(txt);
+};
 function fallbackCopy(txt){ const ta=document.createElement('textarea');ta.value=txt;ta.style.cssText='position:fixed;opacity:0';document.body.appendChild(ta);ta.select();try{document.execCommand('copy');toast('Resumen copiado ✓');}catch(_){toast('No se pudo copiar');}document.body.removeChild(ta); }
 
 // ═══════════════════════════════════════════
 // CERRAR OVERLAYS GENÉRICO
 // ═══════════════════════════════════════════
+doc('bsv-cobro').onclick=function(){var nom=doc('co-nom').value.trim();if(!nom){toast('Agrega descripción');return;}var total=parseFloat(doc('co-total').value);if(!total||total<=0){toast('Ingresa el monto');return;}var quien=doc('co-quien').value.trim();cobros.push({id:Date.now()+'_co_'+Math.random().toString(36).slice(2,5),nom:nom,quien:quien,total:total,pagos:[],ts:Date.now()});guardarCobro();cerrarOv('ov-cobro');renderCobros();toast('Cobro registrado');};
+window.selWhoCobroAb=function(w){cobroWho=w;doc('co-ab-jd').className='tb'+(w==='JD'?' sjd':'');doc('co-ab-lu').className='tb'+(w==='L'?' slu':'');};
+doc('bsv-cobro-ab').onclick=function(){var monto=parseFloat(doc('co-ab-monto').value);if(!monto||monto<=0){toast('Ingresa un monto');return;}var co=cobros.find(function(x){return x.id===cobroId;});if(!co)return;if(!Array.isArray(co.pagos))co.pagos=[];co.pagos.push({monto:monto,who:cobroWho,ts:Date.now()});guardarCobro();cerrarOv('ov-cobro-ab');renderCobros();toast(calcCobro(co)<=0?'Cobrado completamente!':'Cobro parcial registrado');};
+['ov-cobro','ov-cobro-ab'].forEach(function(id){doc(id).addEventListener('click',function(e){if(e.target===doc(id))cerrarOv(id);});});
 window.cerrarOv = id => doc(id).classList.remove('on');
 ['ov-serv','ov-deuda','ov-abono','ov-nota'].forEach(id=>{
   doc(id).addEventListener('click', e=>{ if(e.target===doc(id)) cerrarOv(id); });
@@ -1472,6 +1549,7 @@ window.cerrarOv = id => doc(id).classList.remove('on');
 actualizarMes();
 cargar();
 renderTodo();
+renderCobros();
 </script>
 </body>
 </html>
