@@ -350,7 +350,7 @@ textarea.fi{resize:none;line-height:1.5}
     <div class="rst">Notas del mes</div>
     <div class="nota-res" id="nota-res-txt">—</div>
     <button class="expbtn" onclick="exportarDetallado()" style="margin-bottom:8px;border-color:var(--ig);color:var(--ig2)">&#9776; Balance detallado con notas</button>
-    <button class="expbtn" onclick="exportarSuzuki()" style="margin-bottom:8px;border-color:var(--cu);color:var(--cu2)">&#127925; Reporte Suzuki</button>
+    <button class="expbtn" onclick="exportarQantu()" style="margin-bottom:8px;border-color:var(--cu);color:var(--cu2)">&#127925; Reporte Qantu</button>
     <button class="expbtn" onclick="exportar()">
       <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
       Exportar resumen del mes
@@ -1501,18 +1501,18 @@ window.exportarDetallado=function(){
   txt+='\n'+'─'.repeat(32)+'\nGenerado: '+new Date().toLocaleDateString('es-PE');
   if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(txt).then(function(){toast('Balance copiado');}).catch(function(){fallbackCopy(txt);});}else fallbackCopy(txt);
 };
-window.exportarSuzuki=function(){
+window.exportarQantu=function(){
   var mesL=(MES[curM]+' '+curY).toUpperCase();
-  var kw='suzuki';
+  var kw='qantu';
   var rel=entries.filter(function(e){
     return (e.nota||'').toLowerCase().includes(kw)||(e.sub||'').toLowerCase().includes(kw)||(e.cat||'').toLowerCase().includes(kw);
   }).sort(function(a,b){return b.ts-a.ts;});
   var egSuz=rel.filter(function(e){return e.type==='egreso';}).reduce(function(s,e){return s+e.monto;},0);
   var igSuz=rel.filter(function(e){return e.type==='ingreso';}).reduce(function(s,e){return s+e.monto;},0);
-  var txt='REPORTE SUZUKI — '+mesL+'\n'+'='.repeat(32)+'\n';
+  var txt='REPORTE QANTU — '+mesL+'\n'+'='.repeat(32)+'\n';
   txt+='Registros: '+rel.length+' | Egresos: S/ '+egSuz.toFixed(2)+' | Ingresos: S/ '+igSuz.toFixed(2)+'\n';
   txt+='Balance: '+(igSuz-egSuz>=0?'+':'')+'S/ '+(igSuz-egSuz).toFixed(2)+'\n\n';
-  if(!rel.length){txt+='(Sin registros con Suzuki este mes)\n';}
+  if(!rel.length){txt+='(Sin registros con Qantu este mes)\n';}
   else{rel.forEach(function(e){
     var d=new Date(e.fecha?e.fecha+'T12:00:00':e.ts);
     var cat=e.type==='egreso'?EG.find(function(c){return c.id===e.cat;}):IG.find(function(c){return c.id===e.igCat;});
@@ -1520,7 +1520,7 @@ window.exportarSuzuki=function(){
   });}
   if(notaActual&&notaActual.toLowerCase().includes(kw))txt+='\nNOTA: '+notaActual+'\n';
   txt+='\n'+'─'.repeat(32)+'\nGenerado: '+new Date().toLocaleDateString('es-PE');
-  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(txt).then(function(){toast('Reporte Suzuki copiado');}).catch(function(){fallbackCopy(txt);});}else fallbackCopy(txt);
+  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(txt).then(function(){toast('Reporte Qantu copiado');}).catch(function(){fallbackCopy(txt);});}else fallbackCopy(txt);
 };
 function fallbackCopy(txt){ const ta=document.createElement('textarea');ta.value=txt;ta.style.cssText='position:fixed;opacity:0';document.body.appendChild(ta);ta.select();try{document.execCommand('copy');toast('Resumen copiado ✓');}catch(_){toast('No se pudo copiar');}document.body.removeChild(ta); }
 
