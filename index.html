@@ -63,6 +63,11 @@ html,body{width:100%;min-height:100vh;background:var(--bg);color:var(--sd);font-
 
 /* WHO FILTER */
 .whorow{display:flex;padding:8px 14px 2px;gap:0}
+.filtros-wrap{transition:max-height .3s,opacity .3s;overflow:hidden;max-height:200px;opacity:1}
+.filtros-wrap.oculto{max-height:0;opacity:0}
+.toggle-filtros{display:flex;align-items:center;justify-content:center;gap:5px;padding:4px 0;background:transparent;border:none;color:var(--mt2);font-size:10px;font-family:'Outfit',sans-serif;cursor:pointer;width:100%;letter-spacing:.06em;text-transform:uppercase}
+.toggle-filtros .arr{transition:transform .3s;display:inline-block}
+.filtros-abierto .arr{transform:rotate(180deg)}
 .wp{flex:1;padding:7px 4px;text-align:center;border:1px solid var(--b1);font-size:12px;font-weight:600;cursor:pointer;color:var(--mt);background:var(--card);font-family:'Outfit',sans-serif;transition:all .15s}
 .wp:first-child{border-radius:9px 0 0 9px}
 .wp:last-child{border-radius:0 9px 9px 0;border-left:none}
@@ -264,6 +269,7 @@ textarea.fi{resize:none;line-height:1.5}
     <div class="sumcard e"><div class="lbl">Egresos</div><div class="val red" id="tot-eg">S/ 0</div></div>
     <div class="sumcard i"><div class="lbl">Ingresos</div><div class="val blue" id="tot-ig">S/ 0</div></div>
   </div>
+  <div class="filtros-wrap" id="filtros-wrap">
   <div class="whorow">
     <button class="wp all on" id="wf-all" onclick="setWF('all')">Todos</button>
     <button class="wp jd" id="wf-jd" onclick="setWF('JD')">JD</button>
@@ -275,6 +281,8 @@ textarea.fi{resize:none;line-height:1.5}
     <button class="tp ig" id="tf-ig" onclick="setTF('ingreso')">&#8593; Ingresos</button>
   </div>
   <div class="cfw"><div class="cfr" id="cat-filter"></div></div>
+  </div>
+  <button class="toggle-filtros" id="toggle-filtros" onclick="toggleFiltros()">Filtros <span class="arr">&#9660;</span></button>
   <div class="lw" id="mov-list"></div>
 </div>
 
@@ -342,6 +350,7 @@ textarea.fi{resize:none;line-height:1.5}
     <div class="rst">Notas del mes</div>
     <div class="nota-res" id="nota-res-txt">—</div>
     <button class="expbtn" onclick="exportarDetallado()" style="margin-bottom:8px;border-color:var(--ig);color:var(--ig2)">&#9776; Balance detallado con notas</button>
+    <button class="expbtn" onclick="exportarSuzuki()" style="margin-bottom:8px;border-color:var(--cu);color:var(--cu2)">&#127925; Reporte Suzuki</button>
     <button class="expbtn" onclick="exportar()">
       <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
       Exportar resumen del mes
@@ -536,8 +545,7 @@ const IG = [
 const SERVS = [
   {id:'agua',      ico:'💧', nom:'Agua'},
   {id:'luz',       ico:'💡', nom:'Luz'},
-  {id:'internet',  ico:'📡', nom:'Internet'},
-  {id:'cel-jd',    ico:'📱', nom:'Celular Juan Daniel'},
+  {id:'duo-jd',    ico:'📡', nom:'Dúo Internet + Celular JD'},
   {id:'cel-l',     ico:'📱', nom:'Celular Lucero'},
   {id:'membr',     ico:'🖥️', nom:'Membresías'},
 ];
@@ -740,6 +748,22 @@ document.querySelectorAll('.nt').forEach(tab => {
 // ═══════════════════════════════════════════
 // WHO FILTER
 // ═══════════════════════════════════════════
+window.toggleFiltros=function(){
+  var fw=doc('filtros-wrap'),btn=doc('toggle-filtros');
+  var oculto=fw.classList.toggle('oculto');
+  btn.classList.toggle('filtros-abierto',!oculto);
+};
+var _lastScroll=0;
+function _initScrollHide(){
+  var lw=doc('mov-list'); if(!lw)return;
+  lw.addEventListener('scroll',function(){
+    var cur=lw.scrollTop;
+    var fw=doc('filtros-wrap'),btn=doc('toggle-filtros');
+    if(cur>_lastScroll&&cur>30){fw.classList.add('oculto');btn.classList.remove('filtros-abierto');}
+    else if(cur<_lastScroll){fw.classList.remove('oculto');btn.classList.add('filtros-abierto');}
+    _lastScroll=cur;
+  });
+}
 window.setTF = function(t) {
   tipoF = t;
   doc('tf-all').classList.toggle('on', t==='all');
@@ -1454,58 +1478,6 @@ window.exportar = () => {
   if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(txt).then(()=>toast('Resumen copiado ✓')).catch(()=>fallbackCopy(txt)); }
   else fallbackCopy(txt);
 };
-window.exportarDetallado = function() {
-  const mesL = (MES[curM]+' '+curY).toUpperCase();
-  const eg = entries.filter(e=>e.type==='egreso').reduce((s,e)=>s+e.monto,0);
-  const ig = entries.filter(e=>e.type==='ingreso').reduce((s,e)=>s+e.monto,0);
-  const bal = ig-eg;
-  const allEg = [...EG,{id:'serv_fij',ico:'🔁',lbl:'Servicios'},{id:'deuda_mov',ico:'📄',lbl:'Deudas'}];
-  let txt = 'CASA — BALANCE DETALLADO '+mesL+'\n'+'='.repeat(32)+'\n\n';
-  txt += 'RESUMEN\n  Ingresos:  S/ '+ig.toFixed(2)+'\n  Egresos:   S/ '+eg.toFixed(2)+'\n  Balance:   '+(bal>=0?'+':'')+'S/ '+bal.toFixed(2)+' '+(bal>=0?'OK':'DEFICIT')+'\n\n';
-  const ingresos = entries.filter(e=>e.type==='ingreso').sort((a,b)=>b.ts-a.ts);
-  if(ingresos.length) {
-    txt += 'INGRESOS ('+ingresos.length+')\n';
-    ingresos.forEach(function(e) {
-      const cat = IG.find(function(c){return c.id===e.igCat;});
-      const d = new Date(e.fecha ? e.fecha+'T12:00:00' : e.ts);
-      txt += '  '+d.getDate()+'/'+(d.getMonth()+1)+' · '+(cat?cat.lbl:'—')+(e.sub?' ('+e.sub+')':'')+' · S/ '+e.monto.toFixed(2)+' · '+e.who+(e.nota?' — '+e.nota:'')+' \n';
-    });
-    txt += '\n';
-  }
-  txt += 'EGRESOS\n';
-  allEg.forEach(function(cat) {
-    const ces = entries.filter(function(e){return e.type==='egreso'&&e.cat===cat.id;}).sort(function(a,b){return b.ts-a.ts;});
-    if(!ces.length) return;
-    const tot = ces.reduce(function(s,e){return s+e.monto;},0);
-    txt += '\n  '+cat.lbl.toUpperCase()+' — S/ '+tot.toFixed(2)+'\n';
-    ces.forEach(function(e) {
-      const d = new Date(e.fecha ? e.fecha+'T12:00:00' : e.ts);
-      txt += '    '+d.getDate()+'/'+(d.getMonth()+1)+' · S/ '+e.monto.toFixed(2)+' · '+e.who+(e.sub?' ('+e.sub+')':'')+(e.persona?' ['+e.persona+']':'')+(e.nota?' — '+e.nota:'')+' \n';
-    });
-  });
-  const servConP = SERVS.filter(function(s){return servPagos[s.id]&&servPagos[s.id].length>0;});
-  if(servConP.length) {
-    txt += '\nSERVICIOS\n';
-    servConP.forEach(function(s) {
-      const ps = servPagos[s.id];
-      const tot = ps.reduce(function(a,p){return a+p.monto;},0);
-      txt += '  '+s.nom+' — S/ '+tot.toFixed(2)+' ('+ps.length+' pago'+(ps.length>1?'s':'')+')\n';
-      ps.forEach(function(p){txt += '    S/ '+p.monto.toFixed(2)+' · '+p.who+(p.nota?' — '+p.nota:'')+' \n';});
-    });
-  }
-  const deact = deudas.filter(function(d){return calcPend(d)>0;});
-  if(deact.length) {
-    txt += '\nDEUDAS ACTIVAS\n';
-    deact.forEach(function(d) {
-      const sim = d.cur==='USD'?'$':'S/';
-      txt += '  '+d.nom+(d.acr?' (→ '+d.acr+')':'')+' — Pendiente: '+sim+' '+calcPend(d).toFixed(2)+' de '+sim+' '+d.total.toFixed(2)+'\n';
-    });
-  }
-  if(notaActual.trim()) txt += '\nNOTAS DEL MES\n  '+notaActual.replace(/\n/g,'\n  ')+'\n';
-  txt += '\n'+'─'.repeat(32)+'\nGenerado: '+new Date().toLocaleDateString('es-PE');
-  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(txt).then(function(){toast('Balance copiado');}).catch(function(){fallbackCopy(txt);});}
-  else fallbackCopy(txt);
-};
 
 window.exportarDetallado=function(){
   var mesL=(MES[curM]+' '+curY).toUpperCase();
@@ -1529,6 +1501,27 @@ window.exportarDetallado=function(){
   txt+='\n'+'─'.repeat(32)+'\nGenerado: '+new Date().toLocaleDateString('es-PE');
   if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(txt).then(function(){toast('Balance copiado');}).catch(function(){fallbackCopy(txt);});}else fallbackCopy(txt);
 };
+window.exportarSuzuki=function(){
+  var mesL=(MES[curM]+' '+curY).toUpperCase();
+  var kw='suzuki';
+  var rel=entries.filter(function(e){
+    return (e.nota||'').toLowerCase().includes(kw)||(e.sub||'').toLowerCase().includes(kw)||(e.cat||'').toLowerCase().includes(kw);
+  }).sort(function(a,b){return b.ts-a.ts;});
+  var egSuz=rel.filter(function(e){return e.type==='egreso';}).reduce(function(s,e){return s+e.monto;},0);
+  var igSuz=rel.filter(function(e){return e.type==='ingreso';}).reduce(function(s,e){return s+e.monto;},0);
+  var txt='REPORTE SUZUKI — '+mesL+'\n'+'='.repeat(32)+'\n';
+  txt+='Registros: '+rel.length+' | Egresos: S/ '+egSuz.toFixed(2)+' | Ingresos: S/ '+igSuz.toFixed(2)+'\n';
+  txt+='Balance: '+(igSuz-egSuz>=0?'+':'')+'S/ '+(igSuz-egSuz).toFixed(2)+'\n\n';
+  if(!rel.length){txt+='(Sin registros con Suzuki este mes)\n';}
+  else{rel.forEach(function(e){
+    var d=new Date(e.fecha?e.fecha+'T12:00:00':e.ts);
+    var cat=e.type==='egreso'?EG.find(function(c){return c.id===e.cat;}):IG.find(function(c){return c.id===e.igCat;});
+    txt+=(e.type==='egreso'?'[-]':'[+]')+' '+d.getDate()+'/'+(d.getMonth()+1)+' S/ '+e.monto.toFixed(2)+' · '+e.who+' · '+(cat?cat.lbl:'—')+(e.sub?' ('+e.sub+')':'')+(e.nota?' — '+e.nota:'')+' \n';
+  });}
+  if(notaActual&&notaActual.toLowerCase().includes(kw))txt+='\nNOTA: '+notaActual+'\n';
+  txt+='\n'+'─'.repeat(32)+'\nGenerado: '+new Date().toLocaleDateString('es-PE');
+  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(txt).then(function(){toast('Reporte Suzuki copiado');}).catch(function(){fallbackCopy(txt);});}else fallbackCopy(txt);
+};
 function fallbackCopy(txt){ const ta=document.createElement('textarea');ta.value=txt;ta.style.cssText='position:fixed;opacity:0';document.body.appendChild(ta);ta.select();try{document.execCommand('copy');toast('Resumen copiado ✓');}catch(_){toast('No se pudo copiar');}document.body.removeChild(ta); }
 
 // ═══════════════════════════════════════════
@@ -1550,6 +1543,7 @@ actualizarMes();
 cargar();
 renderTodo();
 renderCobros();
+_initScrollHide();
 </script>
 </body>
 </html>
