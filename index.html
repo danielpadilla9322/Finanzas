@@ -23,7 +23,7 @@ html,body{width:100%;min-height:100vh;background:var(--bg);color:var(--sd);font-
 
 /* NAV */
 .nav{position:fixed;bottom:0;left:0;right:0;height:var(--nh);background:rgba(11,15,24,.97);border-top:1px solid var(--b1);display:flex;z-index:100;backdrop-filter:blur(12px)}
-.nt{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;color:var(--mt2);font-size:9px;letter-spacing:.08em;text-transform:uppercase;font-weight:500;padding-bottom:6px;user-select:none;position:relative;transition:color .2s}
+.nt{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;cursor:pointer;color:var(--mt2);font-size:8px;letter-spacing:.08em;text-transform:uppercase;font-weight:500;padding-bottom:6px;user-select:none;position:relative;transition:color .2s}
 .nt.on{color:var(--cu)}
 .nt svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
 .nb{position:absolute;top:6px;right:calc(50% - 20px);min-width:15px;height:15px;border-radius:8px;background:var(--wn);color:#0b0f18;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;padding:0 3px;opacity:0;transition:opacity .2s}
@@ -307,6 +307,28 @@ textarea.fi{resize:none;line-height:1.5}
     <div class="sumcard e"><div class="lbl">Alimentos</div><div class="val red" id="ali-a">S/ 0</div></div>
     <div class="sumcard" style="border-color:var(--cu);background:rgba(196,122,74,.08)"><div class="lbl">Total</div><div class="val cop" id="ali-t">S/ 0</div></div>
   </div>
+  <div style="padding:8px 14px 4px">
+    <div style="font-size:10px;color:var(--mt);text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px;font-weight:500">Proporción Alimentos / Comida — objetivo 70/30</div>
+    <div style="height:18px;border-radius:9px;background:var(--card2);overflow:hidden;display:flex">
+      <div id="ali-bar-alim" style="height:100%;background:var(--ig);transition:width .4s;width:0%"></div>
+      <div id="ali-bar-com"  style="height:100%;background:var(--eg);transition:width .4s;width:0%"></div>
+    </div>
+    <div style="display:flex;justify-content:space-between;margin-top:4px">
+      <span style="font-size:11px;color:var(--ig2)" id="ali-pct-alim">Alimentos 0%</span>
+      <span style="font-size:10px;color:var(--mt);font-weight:600" id="ali-pct-status">—</span>
+      <span style="font-size:11px;color:var(--eg2)" id="ali-pct-com">Comida 0%</span>
+    </div>
+  </div>
+  <div style="padding:2px 14px 8px">
+    <div style="font-size:10px;color:var(--mt);text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px;font-weight:500">Semana actual — tope S/ 250</div>
+    <div style="height:14px;border-radius:7px;background:var(--card2);overflow:hidden">
+      <div id="ali-sem-bar" style="height:100%;border-radius:7px;background:var(--ig);transition:width .4s;width:0%;max-width:100%"></div>
+    </div>
+    <div style="display:flex;justify-content:space-between;margin-top:4px">
+      <span style="font-size:11px;color:var(--sd2)" id="ali-sem-txt">S/ 0 esta semana</span>
+      <span style="font-size:11px;font-weight:600" id="ali-sem-status">—</span>
+    </div>
+  </div>
   <div class="aliwho">
     <div class="alicard"><div class="lbl">Juan Daniel</div><div class="val" id="ali-jd">S/ 0</div></div>
     <div class="alicard"><div class="lbl">Lucero</div><div class="val" id="ali-lu">S/ 0</div></div>
@@ -358,11 +380,29 @@ textarea.fi{resize:none;line-height:1.5}
   </div>
 </div>
 
+<!-- PANTALLA OTROS -->
+<div class="sc" id="sc-otros">
+  <div class="hdr"><div class="hdr-ey">Gastos variables</div><div class="hdr-t">Otros &#x1F4B8;</div></div>
+  <div class="mbar"><button class="mnav" id="pm4">&#8249;</button><span class="mlbl" id="ml4"></span><button class="mnav" id="nm4">&#8250;</button></div>
+  <div style="padding:10px 14px 4px;display:grid;grid-template-columns:1fr 1fr;gap:8px">
+    <div class="sumcard" style="border-color:var(--eg)"><div class="lbl">Total Otros</div><div class="val red" id="otros-total">S/ 0</div></div>
+    <div class="sumcard"><div class="lbl">Registros</div><div class="val" id="otros-count">0</div></div>
+  </div>
+  <div style="padding:6px 14px 2px;font-size:10px;color:var(--mt);text-transform:uppercase;letter-spacing:.1em;font-weight:500">Por subcategoría</div>
+  <div style="padding:0 14px 6px" id="otros-subs-br"></div>
+  <div class="aliwho" style="padding:4px 14px">
+    <div class="alicard"><div class="lbl">Juan Daniel</div><div class="val" id="otros-jd">S/ 0</div></div>
+    <div class="alicard"><div class="lbl">Lucero</div><div class="val" id="otros-lu">S/ 0</div></div>
+  </div>
+  <div style="padding:8px 14px 4px;font-size:10px;color:var(--mt);text-transform:uppercase;letter-spacing:.1em;font-weight:500">Registros del mes</div>
+  <div class="ali-list" id="otros-list"></div>
+</div>
 <!-- NAV -->
 <nav class="nav">
-  <div class="nt on" data-sc="sc-mov"><svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>Movim.</div>
+  <div class="nt on" data-sc="sc-mov"><svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>Mov.</div>
   <div class="nt" data-sc="sc-fij"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>Fijos<div class="nb" id="nb-fij"></div></div>
-  <div class="nt" data-sc="sc-ali"><svg viewBox="0 0 24 24"><path d="M18 8h1a4 4 0 010 8h-1"/><path d="M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>Aliment.</div>
+  <div class="nt" data-sc="sc-ali"><svg viewBox="0 0 24 24"><path d="M18 8h1a4 4 0 010 8h-1"/><path d="M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>Alim.</div>
+  <div class="nt" data-sc="sc-otros"><svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>Otros</div>
   <div class="nt" data-sc="sc-res"><svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>Resumen</div>
 </nav>
 
@@ -530,9 +570,10 @@ const EG = [
   {id:'astor',      ico:'🍼', lbl:'Astor',       subs:['Ropa','Alimentación','Salud','Farmacia','Juguetes / Interactivos','Pendientes','Otros']},
   {id:'transporte', ico:'🚌', lbl:'Transp.',     subs:['Taxi','InDrive / Didi','Colectivo','Otros']},
   {id:'salud',      ico:'💊', lbl:'Salud',       subs:['Consulta','Medicamentos','Otros']},
-  {id:'hogar',      ico:'🔧', lbl:'Hogar',       subs:['Muebles','Electrodomésticos','Materiales','Maestro de obras','Otros']},
+  {id:'hogar',      ico:'🔧', lbl:'Hogar',       subs:['Muebles','Electrodomésticos','Materiales','Limpieza','Maestro de obras','Otros']},
   {id:'inversion',  ico:'📈', lbl:'Inversión',   subs:['Educación','Cursos','Membresías','Equipos','Materiales','Otros']},
-  {id:'otros',      ico:'📌', lbl:'Otros',       subs:['Materiales','Regalos','Reuniones','Temu / Aliexpress','Libros','Shalom','Jojo','Otros']},
+  {id:'higiene',    ico:'🧴', lbl:'Higiene',     subs:['Cuidado personal','Farmacia','Otros']},
+  {id:'otros',      ico:'💸', lbl:'Otros',       subs:['Materiales','Regalos','Reuniones','Temu / Aliexpress','Libros','Shalom','Jojo','Otros']},
 ];
 const IG = [
   {id:'alquiler',  ico:'🏠', lbl:'Alquiler',   subs:['Santa Úrsula','Qheswa','Otros']},
@@ -720,14 +761,15 @@ function cambiarMes(d) {
   if(curM < 0)  { curM = 11; curY--; }
   if(curM > 11) { curM = 0;  curY++; }
   actualizarMes(); cargar(); renderTodo();
+  var _asc=document.querySelector('.sc.on'); if(_asc){if(_asc.id==='sc-ali')setTimeout(renderAli,300);if(_asc.id==='sc-otros')setTimeout(renderOtros,300);}
 }
 function actualizarMes() {
   const l = MES[curM] + ' ' + curY;
-  ['ml1','ml2','ml3'].forEach(id => { const el=doc(id); if(el) el.textContent=l; });
+  ['ml1','ml2','ml3','ml4'].forEach(id => { const el=doc(id); if(el) el.textContent=l; });
   const ey = doc('res-ey'); if(ey) ey.textContent = l;
 }
-['pm1','pm2','pm3'].forEach(id => { const el=doc(id); if(el) el.onclick = () => cambiarMes(-1); });
-['nm1','nm2','nm3'].forEach(id => { const el=doc(id); if(el) el.onclick = () => cambiarMes(1); });
+['pm1','pm2','pm3','pm4'].forEach(id => { const el=doc(id); if(el) el.onclick = () => cambiarMes(-1); });
+['nm1','nm2','nm3','nm4'].forEach(id => { const el=doc(id); if(el) el.onclick = () => cambiarMes(1); });
 
 // ═══════════════════════════════════════════
 // NAV
@@ -741,6 +783,7 @@ document.querySelectorAll('.nt').forEach(tab => {
     const sc = tab.dataset.sc;
     if(sc === 'sc-fij') { renderServs(); renderDeudas(); renderCobros(); }
     if(sc === 'sc-ali') renderAli();
+    if(sc === 'sc-otros') renderOtros();
     if(sc === 'sc-res') renderRes();
   });
 });
@@ -1390,9 +1433,63 @@ function renderAli() {
     rl.appendChild(r);
   });
   if(!food.length) rl.innerHTML='<div class="empty">Sin registros este mes.</div>';
+  var tc2=entries.filter(function(e){return e.type==='egreso'&&e.cat==='comida';}).reduce(function(s,e){return s+e.monto;},0);
+  var ta2=entries.filter(function(e){return e.type==='egreso'&&e.cat==='alimentos';}).reduce(function(s,e){return s+e.monto;},0);
+  var tt2=tc2+ta2||1; var pAlim=Math.round(ta2/tt2*100); var pCom=Math.round(tc2/tt2*100);
+  var ba=doc('ali-bar-alim'); var bc2=doc('ali-bar-com');
+  if(ba) ba.style.width=pAlim+'%'; if(bc2) bc2.style.width=pCom+'%';
+  var pa=doc('ali-pct-alim'); var pc2=doc('ali-pct-com'); var ps=doc('ali-pct-status');
+  if(pa) pa.textContent='Alimentos '+pAlim+'%'; if(pc2) pc2.textContent='Comida '+pCom+'%';
+  if(ps){if(pAlim>=65){ps.textContent='✓ En línea';ps.style.color='var(--ig2)';}else if(pAlim>=50){ps.textContent='~ Mejorar';ps.style.color='var(--wn2)';}else{ps.textContent='↑ Ajustar';ps.style.color='var(--eg2)';}}
+  var ahora=new Date(); var diaSem=ahora.getDay(); var lunesOff=diaSem===0?-6:1-diaSem;
+  var lunes=new Date(ahora); lunes.setDate(ahora.getDate()+lunesOff); lunes.setHours(0,0,0,0);
+  var domingo=new Date(lunes); domingo.setDate(lunes.getDate()+6); domingo.setHours(23,59,59,999);
+  var semFood=entries.filter(function(e){
+    if(e.type!=='egreso'||(e.cat!=='comida'&&e.cat!=='alimentos')) return false;
+    var fd=e.fecha?new Date(e.fecha+'T12:00:00'):new Date(e.ts); return fd>=lunes&&fd<=domingo;
+  });
+  var semTotal=semFood.reduce(function(s,e){return s+e.monto;},0);
+  var TOPE=250; var pctSem=Math.min(Math.round(semTotal/TOPE*100),100);
+  var sb=doc('ali-sem-bar'); var st=doc('ali-sem-txt'); var ss=doc('ali-sem-status');
+  if(sb){sb.style.width=pctSem+'%';sb.style.background=pctSem>90?'var(--eg)':pctSem>70?'var(--wn)':'var(--ig)';}
+  if(st) st.textContent='S/ '+semTotal.toFixed(2)+' esta semana';
+  if(ss){var resto=TOPE-semTotal;if(resto>=0){ss.textContent='S/ '+resto.toFixed(0)+' disponible';ss.style.color='var(--ig2)';}else{ss.textContent='S/ '+Math.abs(resto).toFixed(0)+' sobre el tope';ss.style.color='var(--eg2)';}}
 }
 
 // ═══════════════════════════════════════════
+/* ══ OTROS ══ */
+function renderOtros(){
+  var otros=entries.filter(function(e){return e.type==='egreso'&&e.cat==='otros';});
+  var total=otros.reduce(function(s,e){return s+e.monto;},0);
+  doc('otros-total').textContent='S/ '+total.toFixed(2);
+  doc('otros-count').textContent=otros.length;
+  doc('otros-jd').textContent='S/ '+otros.filter(function(e){return e.who==='JD';}).reduce(function(s,e){return s+e.monto;},0).toFixed(2);
+  doc('otros-lu').textContent='S/ '+otros.filter(function(e){return e.who==='L';}).reduce(function(s,e){return s+e.monto;},0).toFixed(2);
+  var br=doc('otros-subs-br'); if(!br) return; br.innerHTML='';
+  var gr={}; var gt=total||1;
+  otros.forEach(function(e){var k=(e.sub||'Sin subcategoría').replace(/^Otros:.*/,'Otros'); gr[k]=(gr[k]||0)+e.monto;});
+  Object.entries(gr).sort(function(a,b){return b[1]-a[1];}).forEach(function(kv){
+    var pct=Math.round(kv[1]/gt*100);
+    var r=document.createElement('div'); r.className='brow';
+    r.innerHTML='<span class="brow-lbl">'+kv[0]+'</span><div class="brow-bar"><div class="brow-fill" style="width:'+pct+'%;background:var(--eg)"></div></div><span class="brow-val">S/ '+kv[1].toFixed(0)+'</span>';
+    br.appendChild(r);
+  });
+  if(!br.children.length) br.innerHTML='<p style="font-size:12px;color:var(--mt)">Sin registros.</p>';
+  var rl=doc('otros-list'); if(!rl) return; rl.innerHTML='';
+  var sorted=otros.slice().sort(function(a,b){return b.ts-a.ts;});
+  if(!sorted.length){rl.innerHTML='<div class="empty">Sin registros este mes</div>';return;}
+  sorted.forEach(function(e){
+    var d=new Date(e.fecha?e.fecha+'T12:00:00':e.ts); var wc=e.who==='JD'?'jd':'lu';
+    var r=document.createElement('div'); r.className='gi';
+    r.innerHTML='<div class="gico">&#x1F4B8;</div>'+
+      '<div class="ginfo"><div class="gnota">'+(e.nota||'—')+'</div>'+
+      '<div class="gmeta"><span class="wtag '+wc+'">'+e.who+'</span>'+(e.sub?'<span class="stag">'+e.sub+'</span>':'')+
+      '<span>'+d.getDate()+'/'+(d.getMonth()+1)+'</span></div></div>'+
+      '<div class="gright"><div class="gamt neg">−S/ '+e.monto.toFixed(2)+'</div></div>';
+    rl.appendChild(r);
+  });
+}
+
 // RESUMEN
 // ═══════════════════════════════════════════
 function renderRes() {
