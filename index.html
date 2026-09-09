@@ -307,36 +307,35 @@ textarea.fi{resize:none;line-height:1.5}
     <div class="sumcard e"><div class="lbl">Alimentos</div><div class="val red" id="ali-a">S/ 0</div></div>
     <div class="sumcard" style="border-color:var(--cu);background:rgba(196,122,74,.08)"><div class="lbl">Total</div><div class="val cop" id="ali-t">S/ 0</div></div>
   </div>
-  <div style="padding:8px 14px 4px">
-    <div style="font-size:10px;color:var(--mt);text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px;font-weight:500">Proporción Alimentos / Comida — objetivo 70/30</div>
-    <div style="height:18px;border-radius:9px;background:var(--card2);overflow:hidden;display:flex">
-      <div id="ali-bar-alim" style="height:100%;background:var(--ig);transition:width .4s;width:0%"></div>
-      <div id="ali-bar-com"  style="height:100%;background:var(--eg);transition:width .4s;width:0%"></div>
-    </div>
-    <div style="display:flex;justify-content:space-between;margin-top:4px">
-      <span style="font-size:11px;color:var(--ig2)" id="ali-pct-alim">Alimentos 0%</span>
-      <span style="font-size:10px;color:var(--mt);font-weight:600" id="ali-pct-status">—</span>
-      <span style="font-size:11px;color:var(--eg2)" id="ali-pct-com">Comida 0%</span>
-    </div>
-  </div>
-  <div style="padding:2px 14px 8px">
-    <div style="font-size:10px;color:var(--mt);text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px;font-weight:500">Semana actual — tope S/ 250</div>
-    <div style="height:14px;border-radius:7px;background:var(--card2);overflow:hidden">
-      <div id="ali-sem-bar" style="height:100%;border-radius:7px;background:var(--ig);transition:width .4s;width:0%;max-width:100%"></div>
-    </div>
-    <div style="display:flex;justify-content:space-between;margin-top:4px">
-      <span style="font-size:11px;color:var(--sd2)" id="ali-sem-txt">S/ 0 esta semana</span>
-      <span style="font-size:11px;font-weight:600" id="ali-sem-status">—</span>
-    </div>
-  </div>
   <div class="aliwho">
     <div class="alicard"><div class="lbl">Juan Daniel</div><div class="val" id="ali-jd">S/ 0</div></div>
     <div class="alicard"><div class="lbl">Lucero</div><div class="val" id="ali-lu">S/ 0</div></div>
   </div>
-  <div class="alibr"><div class="alibr-t">Comida — subcategorías</div><div id="ali-c-br"></div></div>
-  <div class="alibr"><div class="alibr-t">Alimentos — subcategorías</div><div id="ali-a-br"></div></div>
-  <div class="alibr-t" style="padding:0 14px 6px">Registros</div>
-  <div class="ali-list" id="ali-list"></div>
+  <!-- PRESUPUESTOS DE ALIMENTACIÓN -->
+  <div style="padding:10px 14px 4px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+      <span style="font-size:10px;color:var(--mt);text-transform:uppercase;letter-spacing:.1em;font-weight:500">Presupuestos entregados</span>
+      <span style="font-size:11px;color:var(--cu2);font-weight:600" id="ali-presu-total">S/ 0</span>
+    </div>
+    <div id="ali-presu-list"></div>
+  </div>
+  <!-- COMPRAS SUELTAS DE ALIMENTOS -->
+  <div style="padding:8px 14px 4px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+      <span style="font-size:10px;color:var(--mt);text-transform:uppercase;letter-spacing:.1em;font-weight:500">Otras compras de alimentos</span>
+      <span style="font-size:11px;color:var(--sd2);font-weight:600" id="ali-sueltas-total">S/ 0</span>
+    </div>
+    <div id="ali-sueltas-list"></div>
+  </div>
+  <!-- COMIDA -->
+  <div style="padding:8px 14px 4px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+      <span style="font-size:10px;color:var(--mt);text-transform:uppercase;letter-spacing:.1em;font-weight:500">Comida &#8212; salidas y delivery</span>
+      <span style="font-size:11px;color:var(--eg2);font-weight:600" id="ali-comida-total">S/ 0</span>
+    </div>
+    <div id="ali-comida-list"></div>
+  </div>
+  <div style="height:80px"></div>
 </div>
 
 <!-- RESUMEN -->
@@ -365,6 +364,17 @@ textarea.fi{resize:none;line-height:1.5}
       <div class="wcard"><div class="wcn jd">Juan Daniel</div><div class="wcv blue" id="rs-jd-ig">S/ 0</div><div class="wcats" id="rs-jd-ig-cats"></div></div>
       <div class="wcard"><div class="wcn lu">Lucero</div><div class="wcv blue" id="rs-lu-ig">S/ 0</div><div class="wcats" id="rs-lu-ig-cats"></div></div>
     </div>
+  </div>
+  <div class="rsblock">
+    <div class="rst">Pendiente con Qantu</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;background:rgba(196,122,74,.08);border:1px solid rgba(196,122,74,.3);border-radius:11px;padding:12px 14px;margin-bottom:8px">
+      <div>
+        <div style="font-size:12px;color:var(--sd2)">Total acumulado</div>
+        <div style="font-size:10px;color:var(--mt);margin-top:2px" id="rs-qantu-detalle">0 pagos directos</div>
+      </div>
+      <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:700;color:var(--cu2)" id="rs-qantu-pend">S/ 0</div>
+    </div>
+    <div id="rs-qantu-lista"></div>
   </div>
   <div class="rsblock"><div class="rst">Egresos por categoría</div><div id="rs-cats"></div></div>
   <div class="rsblock"><div class="rst">Últimos movimientos</div><div id="rs-recent"></div></div>
@@ -450,6 +460,11 @@ textarea.fi{resize:none;line-height:1.5}
         <div class="fl">Subcategoría</div>
         <div class="scgrid" id="sc-ig-subs-g"></div>
         <input class="fi otros-fi" id="fi-ig-otros" type="text" placeholder="Especifica..." maxlength="60">
+      </div>
+      <div id="qantu-pct-wrap" style="display:none;margin-top:10px;background:rgba(196,122,74,.08);border:1px solid rgba(196,122,74,.25);border-radius:10px;padding:10px 12px">
+        <div class="fl" style="margin-top:0">Monto que va a Qantu (S/)</div>
+        <input class="fi" type="number" id="fi-qantu-pct" placeholder="0.00" inputmode="decimal" step="0.01" min="0">
+        <div style="font-size:10px;color:var(--mt);margin-top:5px">Se acumula como pendiente con la escuela.</div>
       </div>
     </div>
     <div class="mact">
@@ -565,7 +580,7 @@ textarea.fi{resize:none;line-height:1.5}
 // ═══════════════════════════════════════════
 const EG = [
   {id:'comida',     ico:'🥘', lbl:'Comida',     subs:['Menú','Restaurante','Delivery','Caprichos','Otros']},
-  {id:'alimentos',  ico:'🛒', lbl:'Alimentos',   subs:['Bodega','Mercado','Orión','La Canasta','Plaza Vea','Tottus','Otros']},
+  {id:'alimentos',  ico:'🛒', lbl:'Alimentos',   subs:['Presupuesto','Bodega','Mercado','Orión','La Canasta','Plaza Vea','Tottus','Otros']},
   {id:'ropa',       ico:'👕', lbl:'Ropa',        subs:[], persona:true},
   {id:'astor',      ico:'🍼', lbl:'Astor',       subs:['Ropa','Alimentación','Salud','Farmacia','Juguetes / Interactivos','Pendientes','Otros']},
   {id:'transporte', ico:'🚌', lbl:'Transp.',     subs:['Taxi','InDrive / Didi','Colectivo','Otros']},
@@ -970,6 +985,7 @@ function abrirMov(id) {
   mPers = e ? (e.persona||'') : '';
   mIgCat = e ? (e.igCat||'alquiler') : 'alquiler';
   mIgSub = e ? (e.type==='ingreso'&&e.sub ? e.sub : '') : '';
+  if(doc('fi-qantu-pct')) doc('fi-qantu-pct').value = (e && e.qantuPct) ? e.qantuPct : '';
 
   doc('mo-mov-t').textContent = e ? 'Editar registro' : 'Nuevo registro';
   doc('bsv-mov').textContent  = e ? 'Guardar cambios' : 'Guardar';
@@ -1095,6 +1111,13 @@ function buildCgIg() {
   } else {
     sw.className = 'scwrap'; fi.className = 'fi otros-fi'; fi.value = '';
   }
+  // Campo Qantu: solo visible si es Qantu + Pago directo
+  var qw = doc('qantu-pct-wrap');
+  if(qw) {
+    var mostrar = (mIgCat === 'qantu' && mIgSub === 'Pago directo');
+    qw.style.display = mostrar ? '' : 'none';
+    if(!mostrar) doc('fi-qantu-pct').value = '';
+  }
 }
 
 // ═══════════════════════════════════════════
@@ -1138,6 +1161,10 @@ doc('bsv-mov').onclick = () => {
   } else {
     entry.cat   = 'ingreso';
     entry.igCat = mIgCat;
+    if(mIgCat === 'qantu' && mIgSub === 'Pago directo') {
+      var qp = parseFloat(doc('fi-qantu-pct').value);
+      if(qp > 0) entry.qantuPct = qp;
+    }
     if(igSubFinal) entry.sub = igSubFinal;
   }
 
@@ -1399,61 +1426,87 @@ doc('ov-abono').addEventListener('click',e=>{if(e.target===doc('ov-abono'))cerra
 // ALIMENTACIÓN
 // ═══════════════════════════════════════════
 function renderAli() {
-  const tc=entries.filter(e=>e.type==='egreso'&&e.cat==='comida').reduce((s,e)=>s+e.monto,0);
-  const ta=entries.filter(e=>e.type==='egreso'&&e.cat==='alimentos').reduce((s,e)=>s+e.monto,0);
-  const tt=tc+ta;
+  var tc = entries.filter(function(e){return e.type==='egreso'&&e.cat==='comida';}).reduce(function(s,e){return s+e.monto;},0);
+  var ta = entries.filter(function(e){return e.type==='egreso'&&e.cat==='alimentos';}).reduce(function(s,e){return s+e.monto;},0);
   doc('ali-c').textContent='S/ '+tc.toFixed(2);
   doc('ali-a').textContent='S/ '+ta.toFixed(2);
-  doc('ali-t').textContent='S/ '+tt.toFixed(2);
-  const food=entries.filter(e=>e.type==='egreso'&&(e.cat==='comida'||e.cat==='alimentos'));
-  doc('ali-jd').textContent='S/ '+food.filter(e=>e.who==='JD').reduce((s,e)=>s+e.monto,0).toFixed(2);
-  doc('ali-lu').textContent='S/ '+food.filter(e=>e.who==='L').reduce((s,e)=>s+e.monto,0).toFixed(2);
+  doc('ali-t').textContent='S/ '+(tc+ta).toFixed(2);
+  var food = entries.filter(function(e){return e.type==='egreso'&&(e.cat==='comida'||e.cat==='alimentos');});
+  doc('ali-jd').textContent='S/ '+food.filter(function(e){return e.who==='JD';}).reduce(function(s,e){return s+e.monto;},0).toFixed(2);
+  doc('ali-lu').textContent='S/ '+food.filter(function(e){return e.who==='L';}).reduce(function(s,e){return s+e.monto;},0).toFixed(2);
 
-  function brkSub(catId, wrapId) {
-    const w=doc(wrapId); w.innerHTML='';
-    const ces=entries.filter(e=>e.type==='egreso'&&e.cat===catId);
-    const t2=ces.reduce((s,e)=>s+e.monto,0)||1;
-    const gr={};
-    ces.forEach(e=>{const k=e.sub||'Sin subcategoría';gr[k]=(gr[k]||0)+e.monto;});
-    Object.entries(gr).sort((a,b)=>b[1]-a[1]).forEach(([lbl,sum])=>{
-      const pct=Math.round(sum/t2*100);
-      const r=document.createElement('div'); r.className='brow';
-      r.innerHTML='<span class="brow-lbl">'+lbl+'</span><div class="brow-bar"><div class="brow-fill" style="width:'+pct+'%"></div></div><span class="brow-val">S/ '+sum.toFixed(0)+'</span>';
-      w.appendChild(r);
-    });
-    if(!w.children.length) w.innerHTML='<p style="font-size:12px;color:var(--mt)">Sin registros.</p>';
+  // helper para renderizar un item
+  function itemHTML(e, ico) {
+    var d  = new Date(e.fecha ? e.fecha+'T12:00:00' : e.ts);
+    var wc = e.who==='JD' ? 'jd' : 'lu';
+    return '<div class="gico">'+ico+'</div>'+
+      '<div class="ginfo"><div class="gnota">'+(e.nota||'\u2014')+'</div>'+
+      '<div class="gmeta"><span class="wtag '+wc+'">'+e.who+'</span>'+
+      (e.sub?'<span class="stag">'+e.sub+'</span>':'')+
+      '<span>'+d.getDate()+'/'+(d.getMonth()+1)+'</span></div></div>'+
+      '<div class="gright"><div class="gamt neg">\u2212S/ '+e.monto.toFixed(2)+'</div></div>';
   }
-  brkSub('comida','ali-c-br'); brkSub('alimentos','ali-a-br');
 
-  const rl=doc('ali-list'); rl.innerHTML='';
-  [...food].sort((a,b)=>b.ts-a.ts).forEach(e=>{
-    const cat=EG.find(c=>c.id===e.cat); const d=new Date(e.fecha?e.fecha+'T12:00:00':e.ts); const wc=e.who==='JD'?'jd':'lu';
-    const r=document.createElement('div'); r.className='gi';
-    r.innerHTML='<div class="gico">'+(cat?cat.ico:'🍽️')+'</div><div class="ginfo"><div class="gnota">'+(e.nota||(cat?cat.lbl:''))+'</div><div class="gmeta"><span class="wtag '+wc+'">'+e.who+'</span>'+(e.sub?'<span class="stag">'+e.sub+'</span>':'')+'<span>'+d.getDate()+'/'+('0'+(d.getMonth()+1)).slice(-2)+'</span></div></div><div class="gright"><div class="gamt neg">−S/ '+e.monto.toFixed(2)+'</div></div>';
-    rl.appendChild(r);
+  // 1. PRESUPUESTOS (alimentos con sub 'Presupuesto')
+  var presupuestos = entries.filter(function(e){
+    return e.type==='egreso' && e.cat==='alimentos' && e.sub==='Presupuesto';
+  }).sort(function(a,b){
+    var da=new Date(a.fecha?a.fecha+'T12:00:00':a.ts), db=new Date(b.fecha?b.fecha+'T12:00:00':b.ts);
+    return db-da;
   });
-  if(!food.length) rl.innerHTML='<div class="empty">Sin registros este mes.</div>';
-  var tc2=entries.filter(function(e){return e.type==='egreso'&&e.cat==='comida';}).reduce(function(s,e){return s+e.monto;},0);
-  var ta2=entries.filter(function(e){return e.type==='egreso'&&e.cat==='alimentos';}).reduce(function(s,e){return s+e.monto;},0);
-  var tt2=tc2+ta2||1; var pAlim=Math.round(ta2/tt2*100); var pCom=Math.round(tc2/tt2*100);
-  var ba=doc('ali-bar-alim'); var bc2=doc('ali-bar-com');
-  if(ba) ba.style.width=pAlim+'%'; if(bc2) bc2.style.width=pCom+'%';
-  var pa=doc('ali-pct-alim'); var pc2=doc('ali-pct-com'); var ps=doc('ali-pct-status');
-  if(pa) pa.textContent='Alimentos '+pAlim+'%'; if(pc2) pc2.textContent='Comida '+pCom+'%';
-  if(ps){if(pAlim>=65){ps.textContent='✓ En línea';ps.style.color='var(--ig2)';}else if(pAlim>=50){ps.textContent='~ Mejorar';ps.style.color='var(--wn2)';}else{ps.textContent='↑ Ajustar';ps.style.color='var(--eg2)';}}
-  var ahora=new Date(); var diaSem=ahora.getDay(); var lunesOff=diaSem===0?-6:1-diaSem;
-  var lunes=new Date(ahora); lunes.setDate(ahora.getDate()+lunesOff); lunes.setHours(0,0,0,0);
-  var domingo=new Date(lunes); domingo.setDate(lunes.getDate()+6); domingo.setHours(23,59,59,999);
-  var semFood=entries.filter(function(e){
-    if(e.type!=='egreso'||(e.cat!=='comida'&&e.cat!=='alimentos')) return false;
-    var fd=e.fecha?new Date(e.fecha+'T12:00:00'):new Date(e.ts); return fd>=lunes&&fd<=domingo;
-  });
-  var semTotal=semFood.reduce(function(s,e){return s+e.monto;},0);
-  var TOPE=250; var pctSem=Math.min(Math.round(semTotal/TOPE*100),100);
-  var sb=doc('ali-sem-bar'); var st=doc('ali-sem-txt'); var ss=doc('ali-sem-status');
-  if(sb){sb.style.width=pctSem+'%';sb.style.background=pctSem>90?'var(--eg)':pctSem>70?'var(--wn)':'var(--ig)';}
-  if(st) st.textContent='S/ '+semTotal.toFixed(2)+' esta semana';
-  if(ss){var resto=TOPE-semTotal;if(resto>=0){ss.textContent='S/ '+resto.toFixed(0)+' disponible';ss.style.color='var(--ig2)';}else{ss.textContent='S/ '+Math.abs(resto).toFixed(0)+' sobre el tope';ss.style.color='var(--eg2)';}}
+  var totPresu = presupuestos.reduce(function(s,e){return s+e.monto;},0);
+  doc('ali-presu-total').textContent='S/ '+totPresu.toFixed(2);
+  var pl = doc('ali-presu-list'); pl.innerHTML='';
+  if(!presupuestos.length){
+    pl.innerHTML='<p style="font-size:12px;color:var(--mt);padding:4px 0">Sin presupuestos registrados este mes. Registra un egreso en Alimentos con subcategor\u00eda \u201cPresupuesto\u201d.</p>';
+  } else {
+    presupuestos.forEach(function(e){
+      var d = new Date(e.fecha?e.fecha+'T12:00:00':e.ts);
+      var wc = e.who==='JD'?'jd':'lu';
+      var box = document.createElement('div');
+      box.style.cssText='background:rgba(196,122,74,.08);border:1px solid rgba(196,122,74,.3);border-radius:11px;padding:11px 13px;margin-bottom:8px';
+      box.innerHTML =
+        '<div style="display:flex;align-items:center;justify-content:space-between">'+
+          '<div><div style="font-size:13px;color:var(--sd);font-weight:500">'+(e.nota||'Presupuesto de alimentaci\u00f3n')+'</div>'+
+          '<div style="font-size:10px;color:var(--mt);margin-top:2px"><span class="wtag '+wc+'">'+e.who+'</span> '+d.getDate()+'/'+(d.getMonth()+1)+'</div></div>'+
+          '<div style="font-family:\'Cormorant Garamond\',serif;font-size:19px;font-weight:700;color:var(--cu2)">S/ '+e.monto.toFixed(2)+'</div>'+
+        '</div>';
+      pl.appendChild(box);
+    });
+  }
+
+  // 2. OTRAS COMPRAS DE ALIMENTOS (sin sub Presupuesto)
+  var sueltas = entries.filter(function(e){
+    return e.type==='egreso' && e.cat==='alimentos' && e.sub!=='Presupuesto';
+  }).sort(function(a,b){return b.ts-a.ts;});
+  var totSueltas = sueltas.reduce(function(s,e){return s+e.monto;},0);
+  doc('ali-sueltas-total').textContent='S/ '+totSueltas.toFixed(2);
+  var sl = doc('ali-sueltas-list'); sl.innerHTML='';
+  if(!sueltas.length){
+    sl.innerHTML='<p style="font-size:12px;color:var(--mt);padding:4px 0">Sin otras compras este mes.</p>';
+  } else {
+    sueltas.forEach(function(e){
+      var r=document.createElement('div'); r.className='gi';
+      r.innerHTML=itemHTML(e,'\ud83d\uded2');
+      sl.appendChild(r);
+    });
+  }
+
+  // 3. COMIDA
+  var comidas = entries.filter(function(e){
+    return e.type==='egreso' && e.cat==='comida';
+  }).sort(function(a,b){return b.ts-a.ts;});
+  doc('ali-comida-total').textContent='S/ '+tc.toFixed(2);
+  var cl = doc('ali-comida-list'); cl.innerHTML='';
+  if(!comidas.length){
+    cl.innerHTML='<p style="font-size:12px;color:var(--mt);padding:4px 0">Sin salidas ni delivery este mes.</p>';
+  } else {
+    comidas.forEach(function(e){
+      var r=document.createElement('div'); r.className='gi';
+      r.innerHTML=itemHTML(e,'\ud83e\udd58');
+      cl.appendChild(r);
+    });
+  }
 }
 
 // ═══════════════════════════════════════════
@@ -1526,6 +1579,35 @@ function renderRes() {
   miniDesglose('L', 'egreso','rs-lu-eg-cats','rs-lu-eg');
   miniDesglose('JD','ingreso','rs-jd-ig-cats','rs-jd-ig');
   miniDesglose('L', 'ingreso','rs-lu-ig-cats','rs-lu-ig');
+
+  // Pendiente Qantu
+  var conPct = entries.filter(function(e){return e.type==='ingreso'&&e.qantuPct>0;})
+                      .sort(function(a,b){return b.ts-a.ts;});
+  var pendQ = conPct.reduce(function(s,e){return s+e.qantuPct;},0);
+  var elQ = doc('rs-qantu-pend'); var elQd = doc('rs-qantu-detalle');
+  if(elQ) elQ.textContent='S/ '+pendQ.toFixed(2);
+  if(elQd) elQd.textContent = conPct.length+' pago'+(conPct.length!==1?'s':'')+' directo'+(conPct.length!==1?'s':'');
+  // detalle por alumno
+  var lq = doc('rs-qantu-lista');
+  if(lq){
+    lq.innerHTML='';
+    if(!conPct.length){
+      lq.innerHTML='<p style="font-size:12px;color:var(--mt)">Sin pagos directos con porcentaje este mes.</p>';
+    } else {
+      conPct.forEach(function(e){
+        var d = new Date(e.fecha ? e.fecha+'T12:00:00' : e.ts);
+        var row = document.createElement('div');
+        row.style.cssText='display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--b1)';
+        row.innerHTML =
+          '<div style="flex:1;min-width:0">'+
+            '<div style="font-size:13px;color:var(--sd);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+(e.nota||'Sin nombre')+'</div>'+
+            '<div style="font-size:10px;color:var(--mt);margin-top:2px">'+d.getDate()+'/'+(d.getMonth()+1)+' \u00b7 cobrado S/ '+e.monto.toFixed(2)+'</div>'+
+          '</div>'+
+          '<div style="font-family:\'Cormorant Garamond\',serif;font-size:16px;font-weight:600;color:var(--cu2);white-space:nowrap">S/ '+e.qantuPct.toFixed(2)+'</div>';
+        lq.appendChild(row);
+      });
+    }
+  }
 
   const bd=doc('rs-cats'); bd.innerHTML='';
   const egT=eg||1;
@@ -1617,7 +1699,16 @@ window.exportarQantu=function(){
   txt+='Total cobrado: S/ '+total.toFixed(2)+'\n';
   txt+='  Pago directo: S/ '+directos.toFixed(2)+'\n';
   txt+='  Pago de Qantu: S/ '+deQantu.toFixed(2)+'\n';
-  txt+='Alumnos registrados: '+rel.length+'\n\n';
+  var pendQ = rel.reduce(function(s,e){return s+(e.qantuPct||0);},0);
+  txt+='Alumnos registrados: '+rel.length+'\n';
+  if(pendQ>0){
+    txt+='\nPENDIENTE CON QANTU: S/ '+pendQ.toFixed(2)+'\n';
+    rel.filter(function(e){return e.qantuPct>0;}).forEach(function(e){
+      var d=new Date(e.fecha?e.fecha+'T12:00:00':e.ts);
+      txt+='  '+d.getDate()+'/'+(d.getMonth()+1)+' \u00b7 '+(e.nota||'Sin nombre')+' \u2192 S/ '+e.qantuPct.toFixed(2)+' (de S/ '+e.monto.toFixed(2)+')\n';
+    });
+  }
+  txt+='\n';
 
   if(!rel.length){
     txt+='(Sin ingresos Qantu este mes)\n';
